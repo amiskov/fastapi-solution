@@ -2,4 +2,4 @@
 set -e
 
 echo "Starting FastAPI server..."
-uvicorn app.main:app --app-dir src
+uvicorn main:app --app-dir .
