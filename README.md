@@ -24,7 +24,7 @@ docker-compose up --build
 \* Образ (ghcr.io/vitaliyrakitin/cinema-django-app:latest) залит в github registry. 
 Сам код можно посмотреть в [репозитории](https://github.com/VitaliyRakitin/new_admin_panel_sprint_2/tree/main/01_docker_compose/app).
 
-\** Образ (ghcr.io/vitaliyrakitin/cinema-django-app:latest) залит в github registry. 
+\** Образ (ghcr.io/vitaliyrakitin/cinema-etl:latest) залит в github registry. 
 Сам код можно посмотреть в [репозитории](https://github.com/VitaliyRakitin/new_admin_panel_sprint_3/tree/main/01_etl).
 
 
