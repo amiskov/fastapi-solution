@@ -1,3 +1,4 @@
+"""Конфигурации сервиса."""
 import os
 from logging import config as logging_config
 

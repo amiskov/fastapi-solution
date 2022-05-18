@@ -1,3 +1,4 @@
+"""Сервис загрузки кинопроизведений."""
 from functools import lru_cache
 from typing import Optional
 
@@ -13,11 +14,22 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
 class FilmService:
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
+    """Сервис FilmService (TODO)."""
+
+    def __init__(self, redis: Redis, elastic: AsyncElasticsearch) -> None:
         self.redis = redis
         self.elastic = elastic
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
+        """
+        Загрузка данных по id.
+
+        Args:
+            film_id:
+
+        Returns:
+            Film (optional):
+        """
         film = await self._film_from_cache(film_id)
         if not film:
             film = await self._get_film_from_elastic(film_id)
@@ -28,6 +40,15 @@ class FilmService:
         return film
 
     async def _get_film_from_elastic(self, film_id: str) -> Optional[Film]:
+        """
+        Загрузка кинопроизведения из ElasticSearch.
+
+        Args:
+            film_id:
+
+        Returns:
+            Film (optional):
+        """
         try:
             doc = await self.elastic.get('movies', film_id)
         except NotFoundError:
@@ -35,6 +56,15 @@ class FilmService:
         return Film(**doc['_source'])
 
     async def _film_from_cache(self, film_id: str) -> Optional[Film]:
+        """
+        Загрузка кинопроизведения из кэша (redis).
+
+        Args:
+            film_id:
+
+        Returns:
+            Film (optional):
+        """
         data = await self.redis.get(film_id)
         if not data:
             return None
@@ -42,7 +72,16 @@ class FilmService:
         film = Film.parse_raw(data)
         return film
 
-    async def _put_film_to_cache(self, film: Film):
+    async def _put_film_to_cache(self, film: Film) -> None:
+        """
+        Загрузка фильма в кэш (redis).
+
+        Args:
+            film:
+
+        Returns:
+            None.
+        """
         await self.redis.set(film.id, film.json(),
                              expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
@@ -52,4 +91,16 @@ def get_film_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
+    """
+    Сервис по загрузке кинопроизведений.
+
+    TODO!
+
+    Args:
+        redis:
+        elastic:
+
+    Returns:
+        FilmService:
+    """
     return FilmService(redis, elastic)
