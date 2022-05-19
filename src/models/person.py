@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 from pydantic.fields import Field
-from models.base_mixin import BaseMixin
+from models.base_mixin import ConfigOverrideMixin
 
 
-class Person(BaseModel, BaseMixin):
+class Person(BaseModel, ConfigOverrideMixin):
     id: str
     name: str
 

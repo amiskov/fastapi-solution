@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field
-from models.base_mixin import BaseMixin
+from models.base_mixin import ConfigOverrideMixin
 
 
-class Genre(BaseModel, BaseMixin):
+class Genre(BaseModel, ConfigOverrideMixin):
     id: str
     name: str = Field(title="Название жанра")
     description: str = Field(title="Описание жанра")
