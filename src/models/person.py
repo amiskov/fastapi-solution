@@ -9,15 +9,18 @@ class Person(BaseModel, ConfigOverrideMixin):
 
 
 class Actor(Person):
+    # TODO: retrieve films from Elastic
     # films: list = Field(title="Фильмы с актёром")
     pass
 
 
 class Director(Person):
+    # TODO: retrieve films from Elastic
     # films: list = Field(title="Снятые режиссёром фильмы")
     pass
 
 
 class Writer(Person):
+    # TODO: retrieve films from Elastic
     # films: list = Field(title="Фильмы по сценарию")
     pass

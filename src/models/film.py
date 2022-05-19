@@ -14,14 +14,15 @@ class Film(BaseModel, ConfigOverrideMixin):
     title: str = Field(title="Название фильма")
     description: Optional[str] = Field(title="Описание фильма")
     imdb_rating: float = Field(title="Рейтинг IMDB")
-    # creation_date: datetime = Field(title="Дата создания фильма")
-    # TODO: We don't have `age_restriction` in our DB.
-    # age_restriction: int = Field(title="Возрастной ценз")
     director: str = Field(title="Режиссёры")  # TODO: should be a list
     actors: list[Actor] = Field(title="Актёры")
     writers: list[Writer] = Field(title="Сценаристы")
     genre: list[str] = Field(title="Жанры")  # TODO: should be a list of Genre
-    file_url: HttpUrl = Field(title="Ссылка на файл")
+    file_path: Optional[str] = Field(title="Ссылка на файл")
+    # TODO: add `created` to Elastic
+    # created: str = Field(title="Дата создания фильма")
+    # TODO: We don't have `age_restriction` in our DB.
+    # age_restriction: int = Field(title="Возрастной ценз")
 
 
 class Movie:
