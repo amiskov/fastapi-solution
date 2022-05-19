@@ -1,5 +1,4 @@
-import logging
-
+"""Конфигурация FastAPI сервиса."""
 import aioredis
 import uvicorn
 from elasticsearch import AsyncElasticsearch
@@ -8,7 +7,6 @@ from fastapi.responses import ORJSONResponse
 
 from api.v1 import films
 from core import config
-from core.logger import LOGGING
 from db import elastic, redis
 
 app = FastAPI(
@@ -20,7 +18,8 @@ app = FastAPI(
 
 
 @app.on_event('startup')
-async def startup():
+async def startup() -> None:
+    """Запуск сервиса."""
     redis.redis = await aioredis.create_redis_pool(
         (config.REDIS_HOST, config.REDIS_PORT), minsize=10, maxsize=20)
     elastic.es = AsyncElasticsearch(
@@ -28,7 +27,8 @@ async def startup():
 
 
 @app.on_event('shutdown')
-async def shutdown():
+async def shutdown() -> None:
+    """Завершение работы сервиса."""
     redis.redis.close()
     await redis.redis.wait_closed()
     await elastic.es.close()
@@ -40,5 +40,5 @@ if __name__ == '__main__':
     uvicorn.run(
         'main:app',
         host='0.0.0.0',
-        port=8000,
+        port=8001,
     )
