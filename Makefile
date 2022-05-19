@@ -1,2 +1,2 @@
 run:
-	uvicorn main:app --app-dir src
+	uvicorn main:app --app-dir src --reload

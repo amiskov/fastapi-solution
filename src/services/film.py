@@ -17,6 +17,24 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
+    async def get_list(self) -> list[Film]:
+        try:
+            # TODO: handle filtering, add caching
+            doc = await self.elastic.search(index="movies",
+                                            body={
+                                                'size': 3,
+                                                'query': {
+                                                    'match_all': {}
+                                                }
+                                            })
+        except NotFoundError:
+            return []
+        films = []
+        for d in doc['hits']['hits']:
+            f = d['_source']
+            films.append(Film(**f))
+        return films
+
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         film = await self._film_from_cache(film_id)
         if not film:

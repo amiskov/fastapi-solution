@@ -7,4 +7,4 @@ class Genre(BaseModel, BaseMixin):
     name: str = Field(title="Название жанра")
     description: str = Field(title="Описание жанра")
     # TODO: What is genre popularity?
-    popularity: float = Field(title="Популярность жанра")
+    # popularity: float = Field(title="Популярность жанра")
