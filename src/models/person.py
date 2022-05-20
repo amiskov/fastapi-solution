@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from models.base_mixin import ConfigOverrideMixin
+from models.base_model_mixin import ConfigOverrideMixin
 
 
 class Person(BaseModel, ConfigOverrideMixin):

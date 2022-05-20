@@ -1,16 +1,10 @@
 """Описание модели кинопроизведения."""
-from typing import Any, Optional
+from typing import Optional
 
-import orjson
 from pydantic import BaseModel, Field
 
-from models.base_mixin import ConfigOverrideMixin
+from models.base_model_mixin import ConfigOverrideMixin
 from models.person import Actor, Writer
-
-
-def orjson_dumps(v: Any, *, default: Any) -> str:
-    """JSON dumps."""
-    return orjson.dumps(v, default=default).decode()
 
 
 class Film(BaseModel, ConfigOverrideMixin):
@@ -31,3 +25,29 @@ class Film(BaseModel, ConfigOverrideMixin):
     # created: str = Field(title='Дата создания фильма')
     # TODO: We don't have `age_restriction` in our DB.
     # age_restriction: int = Field(title='Возрастной ценз')
+
+
+class FilmAPIResponse(BaseModel, ConfigOverrideMixin):
+    """
+    Модель кинопроизведения для API Response.
+    """
+
+    id: str
+    title: str
+    imdb_rating: float
+    description: Optional[str]
+    actors: list
+    writers: list
+    directors: str  # TODO: should be a list
+    genre: list
+
+
+def map_film_response(f: Film) -> FilmAPIResponse:
+    return FilmAPIResponse(id=f.id,
+                           title=f.title,
+                           imdb_rating=f.imdb_rating,
+                           description=f.description,
+                           actors=f.actors,
+                           directors=f.director,
+                           writers=f.writers,
+                           genre=f.genre)
