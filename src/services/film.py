@@ -1,6 +1,5 @@
 """Сервис загрузки кинопроизведений."""
 from functools import lru_cache
-from pprint import pprint
 from typing import Optional
 
 from aioredis import Redis
@@ -120,6 +119,29 @@ class FilmService:
         await self.redis.set(film.id, film.json(),
                              expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
+    async def get_search_result(self, query, page_size, page_number):
+        search_query = {
+            "multi_match": {
+                "query": query,
+                "fields": ["title^3", "description"],
+                "operator": "and",
+                "fuzziness": "AUTO",
+            }
+        }
+        try:
+            doc = await self.elastic.search(
+                index='movies',
+                body={
+                    'size': page_size,
+                    'from': (page_number - 1) * page_size,
+                    'query': search_query
+                })
+        except NotFoundError:
+            return []
+
+        films = [Film(**hit['_source']) for hit in doc['hits']['hits']]
+        return films
+
 
 @lru_cache()
 def get_film_service(
@@ -128,8 +150,6 @@ def get_film_service(
 ) -> FilmService:
     """
     Сервис по загрузке кинопроизведений.
-
-    TODO!
 
     Args:
         redis:
