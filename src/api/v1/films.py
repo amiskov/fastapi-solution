@@ -56,14 +56,17 @@ async def film_details(
 @router.get('/', response_model=list[Film])
 async def films_list(
         film_service: FilmService = Depends(get_film_service),
-        sort: Optional[str] = "-imdb_rating",
-        page_size: int = Query(50, alias="page[size]", ge=1),
-        page_number: int = Query(1, alias="page[number]", ge=1)
+        sort: Optional[str] = '-imdb_rating',
+        page_size: int = Query(50, alias='page[size]', ge=1),
+        page_number: int = Query(1, alias='page[number]', ge=1),
+        filter_genre: str = Query(None, alias='filter[genre]')
 ) -> list[Film]:
     film_resp = await film_service.get_list(
         sort=sort,
         page_size=page_size,
-        page_number=page_number)
+        page_number=page_number,
+        filter_genre=filter_genre
+    )
     if not film_resp:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='films not found')

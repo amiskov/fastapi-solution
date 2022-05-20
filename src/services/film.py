@@ -1,5 +1,6 @@
 """Сервис загрузки кинопроизведений."""
 from functools import lru_cache
+from pprint import pprint
 from typing import Optional
 
 from aioredis import Redis
@@ -20,10 +21,24 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
-    async def get_list(self, sort, page_size, page_number) -> list[Film]:
+    async def get_list(self, sort, page_size, page_number, filter_genre) -> \
+            list[Film]:
         is_desc_sorting = sort.startswith('-')
         order = 'desc' if is_desc_sorting else 'asc'
         sort_term = sort[1:] if is_desc_sorting else sort
+
+        if filter_genre:
+            # TODO: Use genre id after changing the ETL for genres.
+            # Now it works for genre titles like `?filter[genre]=Comedy`
+            # should be `?filter[genre]=5373d043-3f41-4ea8-9947-4b746c601bbd`
+            query = {
+                "bool": {
+                    "filter": {
+                        "term": {"genre": filter_genre}}
+                }
+            }
+        else:
+            query = {'match_all': {}}
 
         try:
             doc = await self.elastic.search(
@@ -32,7 +47,7 @@ class FilmService:
                     'sort': {sort_term: {'order': order}},
                     'size': page_size,
                     'from': (page_number - 1) * page_size,
-                    'query': {'match_all': {}}
+                    'query': query
                 })
         except NotFoundError:
             return []
