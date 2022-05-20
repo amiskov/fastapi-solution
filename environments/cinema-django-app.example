@@ -1,0 +1,16 @@
+DB_NAME=movies_database
+DB_USER=app
+DB_PASSWORD=123qwe
+DB_HOST=db
+DB_PORT=5432
+
+SECRET_KEY = 'django-insecure-6gbm4$hi7+@^^%5y!!r0lnuajx-yk!w-&w9+l83m=e1!gej6tm'
+DEBUG=True
+
+DJANGO_SUPERUSER_NAME=admin
+DJANGO_SUPERUSER_EMAIL=admin@kek.ru
+DJANGO_SUPERUSER_PASSWORD=testpass1234
+
+STATIC_PATH=./app/static
+DB_PATH=./db/pg-data/
+LOCALE_PATH=./app/movies/locale

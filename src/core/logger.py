@@ -1,9 +1,10 @@
+"""Конфигурации логгера."""
 LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-LOG_DEFAULT_HANDLERS = ['console', ]
+LOG_DEFAULT_HANDLERS = ['console']
 
 # В логгере настраивается логгирование uvicorn-сервера.
-# Про логирование в Python можно прочитать в документации 
-# https://docs.python.org/3/howto/logging.html 
+# Про логирование в Python можно прочитать в документации
+# https://docs.python.org/3/howto/logging.html
 # https://docs.python.org/3/howto/logging-cookbook.html
 
 LOGGING = {
@@ -11,7 +12,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': LOG_FORMAT
+            'format': LOG_FORMAT,
         },
         'default': {
             '()': 'uvicorn.logging.DefaultFormatter',

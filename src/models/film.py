@@ -1,13 +1,20 @@
-from typing import Optional
+"""Описание модели кинопроизведения."""
+from typing import Any, Optional
 
-from pydantic import BaseModel, Field, HttpUrl
+import orjson
+
+from pydantic import BaseModel, Field
 from models.base_mixin import ConfigOverrideMixin
-from datetime import datetime
-from models.person import Director, Actor, Writer
-from models.genre import Genre
+from models.person import Actor, Writer
+
+
+def orjson_dumps(v: Any, *, default: Any) -> str:
+    """JSON dumps."""
+    return orjson.dumps(v, default=default).decode()
 
 
 class Film(BaseModel, ConfigOverrideMixin):
+    """Модель кинопроизведения."""
     # TODO: There should be Movie and Series types but for now in our DB
     # there are only `movie` type. So we go with only Film for now.
     id: str
@@ -23,11 +30,3 @@ class Film(BaseModel, ConfigOverrideMixin):
     # created: str = Field(title="Дата создания фильма")
     # TODO: We don't have `age_restriction` in our DB.
     # age_restriction: int = Field(title="Возрастной ценз")
-
-
-class Movie:
-    pass
-
-
-class Series:
-    pass

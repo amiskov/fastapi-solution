@@ -1,0 +1,25 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: autoflake-unused-objects
+        name: Run remove unused imports, keys, variables if exists
+        entry: autoflake -r -i src
+        args: ["--remove-all-unused-imports", "--remove-duplicate-keys", "--remove-unused-variable"]
+        language: python
+        types: [python]
+        pass_filenames: false
+        always_run: true
+    -   id: isort
+        name: Run isort
+        entry: isort -om src
+        language: python
+        types: [python]
+        pass_filenames: false
+        always_run: true
+    -   id: flake8
+        name: Run flake8
+        entry: flake8
+        args: ["--config=setup.cfg"]
+        language: python
+        types: [python]
+        always_run: true

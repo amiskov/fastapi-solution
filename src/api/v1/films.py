@@ -1,3 +1,4 @@
+"""API фильмов."""
 from http import HTTPStatus
 from typing import Optional
 
@@ -10,6 +11,10 @@ router = APIRouter()
 
 
 class Film(BaseModel):
+    """
+    Модель кинопроизведения.
+    """
+
     id: str
     title: str
     imdb_rating: float
@@ -21,9 +26,19 @@ class Film(BaseModel):
 
 
 @router.get('/{film_id}', response_model=Film)
-async def film_details(film_id: str,
-                       film_service: FilmService = Depends(get_film_service)
-                       ) -> Film:
+async def film_details(
+        film_id: str,
+        film_service: FilmService = Depends(get_film_service),
+) -> Film:
+    """Детализация кинопроизведения.
+
+    Args:
+        film_id (str):
+        film_service (FilmService, optional):
+
+    Returns:
+        Film:
+    """
     film = await film_service.get_by_id(film_id)
     if not film:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
