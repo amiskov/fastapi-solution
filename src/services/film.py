@@ -17,22 +17,24 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
-    async def get_list(self) -> list[Film]:
+    async def get_list(self, sort, page_size, page_number) -> list[Film]:
+        is_desc_sorting = sort.startswith('-')
+        order = 'desc' if is_desc_sorting else 'asc'
+        sort_term = sort[1:] if is_desc_sorting else sort
+
         try:
-            # TODO: handle filtering, add caching
-            doc = await self.elastic.search(index="movies",
-                                            body={
-                                                'size': 3,
-                                                'query': {
-                                                    'match_all': {}
-                                                }
-                                            })
+            doc = await self.elastic.search(
+                index='movies',
+                body={
+                    'sort': {sort_term: {'order': order}},
+                    'size': page_size,
+                    'from': (page_number - 1) * page_size,
+                    'query': {'match_all': {}}
+                })
         except NotFoundError:
             return []
-        films = []
-        for d in doc['hits']['hits']:
-            f = d['_source']
-            films.append(Film(**f))
+
+        films = [Film(**hit['_source']) for hit in doc['hits']['hits']]
         return films
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
