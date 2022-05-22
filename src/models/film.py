@@ -28,9 +28,7 @@ class Film(BaseModel, ConfigOverrideMixin):
 
 
 class FilmAPIResponse(BaseModel, ConfigOverrideMixin):
-    """
-    Модель кинопроизведения для API Response.
-    """
+    """Модель кинопроизведения для API Response."""
 
     id: str
     title: str
@@ -43,6 +41,9 @@ class FilmAPIResponse(BaseModel, ConfigOverrideMixin):
 
 
 def map_film_response(f: Film) -> FilmAPIResponse:
+    """
+    Возвращает модель фильма для выдачи по API.
+    """
     return FilmAPIResponse(id=f.id,
                            title=f.title,
                            imdb_rating=f.imdb_rating,

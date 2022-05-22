@@ -20,8 +20,12 @@ class FilmService:
         self.redis = redis
         self.elastic = elastic
 
-    async def get_list(self, sort, page_size, page_number, filter_genre) -> \
-            list[Film]:
+    async def get_list(self,
+                       sort: str,
+                       page_size: int,
+                       page_number: int,
+                       filter_genre: str) -> list[Film]:
+        """Возвращает список [отфильтрованный] список фильмов."""
         is_desc_sorting = sort.startswith('-')
         order = 'desc' if is_desc_sorting else 'asc'
         sort_term = sort[1:] if is_desc_sorting else sort
@@ -31,10 +35,13 @@ class FilmService:
             # Now it works for genre titles like `?filter[genre]=Comedy`
             # should be `?filter[genre]=5373d043-3f41-4ea8-9947-4b746c601bbd`
             query = {
-                "bool": {
-                    "filter": {
-                        "term": {"genre": filter_genre}}
-                }
+                'bool': {
+                    'filter': {
+                        'term': {
+                            'genre': filter_genre,
+                        },
+                    },
+                },
             }
         else:
             query = {'match_all': {}}
@@ -46,8 +53,7 @@ class FilmService:
                     'sort': {sort_term: {'order': order}},
                     'size': page_size,
                     'from': (page_number - 1) * page_size,
-                    'query': query
-                })
+                    'query': query})
         except NotFoundError:
             return []
 
@@ -119,14 +125,18 @@ class FilmService:
         await self.redis.set(film.id, film.json(),
                              expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
-    async def get_search_result(self, query, page_size, page_number):
+    async def get_search_result(self,
+                                query: str,
+                                page_size: int,
+                                page_number: int) -> list[Film]:
+        """Возвращает список фильмов, соответствующий критериям поиска."""
         search_query = {
-            "multi_match": {
-                "query": query,
-                "fields": ["title^3", "description"],
-                "operator": "and",
-                "fuzziness": "AUTO",
-            }
+            'multi_match': {
+                'query': query,
+                'fields': ['title^3', 'description'],
+                'operator': 'and',
+                'fuzziness': 'AUTO',
+            },
         }
         try:
             doc = await self.elastic.search(
@@ -134,7 +144,7 @@ class FilmService:
                 body={
                     'size': page_size,
                     'from': (page_number - 1) * page_size,
-                    'query': search_query
+                    'query': search_query,
                 })
         except NotFoundError:
             return []

@@ -1,3 +1,5 @@
+"""Переопределение умолчаний модели базовой Pydantic."""
+
 from typing import Any
 
 import orjson
@@ -9,6 +11,10 @@ def orjson_dumps(v: Any, *, default: Any) -> str:
 
 
 class ConfigOverrideMixin:
+    """Перегружает методы из базовой модели Pydantic."""
+
     class Config:
+        """Более лучшие методы для."""
+
         json_loads = orjson.loads
         json_dumps = orjson_dumps
