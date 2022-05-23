@@ -59,8 +59,10 @@ services:
 
   etl:
     container_name: etl
-    image: ghcr.io/vitaliyrakitin/cinema-etl:latest
-    restart: always
+    image: python:3.9.6-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.etl
     env_file:
       - environments/cinema-etl.env
     depends_on:

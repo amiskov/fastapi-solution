@@ -1,6 +1,9 @@
 # Асинхронный API для кинотеатра
 [Команда №17](https://yandex-students.slack.com/archives/C03833GPQGH/p1652369332840549), @amiskov и @vitaliyrakitin.
 
+## Код для ETL
+
+Код для ETL-процесса хранится в [репозитории к предыдущему модулю](https://github.com/VitaliyRakitin/new_admin_panel_sprint_3/tree/main/01_etl) и прилинкован в эту репу как сабмодуль.
 
 ## Запуск через docker-compose
 
@@ -17,16 +20,12 @@ docker-compose up --build
 2. *Django App с админкой для онлайн-кинотеатра из спринта 2 (app);
 3. Nginx (nginx);
 4. Elastic Search (elasticsearch);
-5. **ETL-процесс по выгрузке данных из PostgreSQL в Elastic Search из спринта 3 (etl);
+5. ETL-процесс по выгрузке данных из PostgreSQL в Elastic Search из спринта 3 (etl);
 6. Redis;
 7. Сервис fastapi из данного спринта. 
 
 \* Образ (ghcr.io/vitaliyrakitin/cinema-django-app:latest) залит в github registry. 
 Сам код можно посмотреть в [репозитории](https://github.com/VitaliyRakitin/new_admin_panel_sprint_2/tree/main/01_docker_compose/app).
-
-\** Образ (ghcr.io/vitaliyrakitin/cinema-etl:latest) залит в github registry. 
-Сам код можно посмотреть в [репозитории](https://github.com/VitaliyRakitin/new_admin_panel_sprint_3/tree/main/01_etl).
-
 
 ## Я хочу контрибьютить!
 
