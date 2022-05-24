@@ -43,7 +43,7 @@ async def films_list(
         sort=sort,
         page_size=page_size,
         page_number=page_number,
-        filter_genre=filter_genre)
+        genre_id=filter_genre)
     if not films:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='films not found')

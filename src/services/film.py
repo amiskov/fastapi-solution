@@ -24,24 +24,31 @@ class FilmService:
                        sort: str,
                        page_size: int,
                        page_number: int,
-                       filter_genre: str) -> list[Film]:
-        """Возвращает список [отфильтрованный] список фильмов."""
+                       genre_id: str) -> list[Film]:
+        """Возвращает список фильмов, который может быть отфильтрован
+        по ID жанра."""
         is_desc_sorting = sort.startswith('-')
         order = 'desc' if is_desc_sorting else 'asc'
         sort_term = sort[1:] if is_desc_sorting else sort
 
-        if filter_genre:
-            # TODO: Use genre id after changing the ETL for genres.
-            # Now it works for genre titles like `?filter[genre]=Comedy`
-            # should be `?filter[genre]=5373d043-3f41-4ea8-9947-4b746c601bbd`
+        if genre_id:
             query = {
-                'bool': {
-                    'filter': {
-                        'term': {
-                            'genre': filter_genre,
-                        },
-                    },
-                },
+                "bool": {
+                    "filter": [{
+                        "nested": {
+                            "path": "genre",
+                            "query": {
+                                "bool": {
+                                    "filter": [{
+                                        "term": {
+                                            "genre.id": genre_id
+                                        }
+                                    }]
+                                }
+                            }
+                        }
+                    }]
+                }
             }
         else:
             query = {'match_all': {}}
