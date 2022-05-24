@@ -1,5 +1,5 @@
 """Описание модели кинопроизведения."""
-from datetime import datetime
+from datetime import date
 from typing import Optional
 
 from pydantic import BaseModel, Field
@@ -15,7 +15,7 @@ class Film(BaseModel, ConfigOverrideMixin):
     id: str
     title: str = Field(title='Название фильма')
     description: Optional[str] = Field(title='Описание фильма')
-    created: datetime = Field(title='Дата создания фильма')
+    creation_date: Optional[date] = Field(title='Дата создания фильма')
     imdb_rating: float = Field(title='Рейтинг IMDB')
     director: list[str] = Field(title='Режиссёры')
     actors: list[Actor] = Field(title='Актёры')
@@ -31,7 +31,7 @@ class FilmAPIResponse(BaseModel, ConfigOverrideMixin):
     title: str
     imdb_rating: float
     description: Optional[str]
-    created: datetime
+    creation_date: Optional[date]
     actors: list
     writers: list
     directors: list[str]
@@ -46,7 +46,7 @@ def map_film_response(f: Film) -> FilmAPIResponse:
                            title=f.title,
                            imdb_rating=f.imdb_rating,
                            description=f.description,
-                           created=f.created,
+                           creation_date=f.creation_date,
                            actors=f.actors,
                            directors=f.director,
                            writers=f.writers,

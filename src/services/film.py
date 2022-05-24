@@ -25,30 +25,33 @@ class FilmService:
                        page_size: int,
                        page_number: int,
                        genre_id: str) -> list[Film]:
-        """Возвращает список фильмов, который может быть отфильтрован
-        по ID жанра."""
+        """
+        Возвращает список фильмов.
+
+        С опциональной фильтрацией по ID жанра.
+        """
         is_desc_sorting = sort.startswith('-')
         order = 'desc' if is_desc_sorting else 'asc'
         sort_term = sort[1:] if is_desc_sorting else sort
 
         if genre_id:
             query = {
-                "bool": {
-                    "filter": [{
-                        "nested": {
-                            "path": "genre",
-                            "query": {
-                                "bool": {
-                                    "filter": [{
-                                        "term": {
-                                            "genre.id": genre_id
-                                        }
-                                    }]
-                                }
-                            }
-                        }
-                    }]
-                }
+                'bool': {
+                    'filter': [{
+                        'nested': {
+                            'path': 'genre',
+                            'query': {
+                                'bool': {
+                                    'filter': [{
+                                        'term': {
+                                            'genre.id': genre_id,
+                                        },
+                                    }],
+                                },
+                            },
+                        },
+                    }],
+                },
             }
         else:
             query = {'match_all': {}}
