@@ -16,7 +16,7 @@ class Film(BaseModel, ConfigOverrideMixin):
     title: str = Field(title='Название фильма')
     description: Optional[str] = Field(title='Описание фильма')
     imdb_rating: float = Field(title='Рейтинг IMDB')
-    director: str = Field(title='Режиссёры')  # TODO: should be a list
+    director: list[str] = Field(title='Режиссёры')
     actors: list[Actor] = Field(title='Актёры')
     writers: list[Writer] = Field(title='Сценаристы')
     genre: list[str] = Field(title='Жанры')  # TODO: should be a list of Genre
@@ -36,7 +36,7 @@ class FilmAPIResponse(BaseModel, ConfigOverrideMixin):
     description: Optional[str]
     actors: list
     writers: list
-    directors: str  # TODO: should be a list
+    directors: list[str]
     genre: list
 
 
