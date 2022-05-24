@@ -12,8 +12,6 @@ class Genre(BaseModel, ConfigOverrideMixin):
     id: str
     name: str = Field(title='Название жанра')
     description: Optional[str] = Field(title='Описание жанра')
-    # TODO: What is genre popularity?
-    # popularity: float = Field(title='Популярность жанра')
 
 
 class GenreAPIResponse(BaseModel, ConfigOverrideMixin):

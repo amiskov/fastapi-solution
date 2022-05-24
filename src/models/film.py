@@ -12,8 +12,6 @@ from models.person import Actor, Writer
 class Film(BaseModel, ConfigOverrideMixin):
     """Модель кинопроизведения."""
 
-    # TODO: There should be Movie and Series types but for now in our DB
-    # there are only `movie` type. So we go with only Film for now.
     id: str
     title: str = Field(title='Название фильма')
     description: Optional[str] = Field(title='Описание фильма')
@@ -24,8 +22,6 @@ class Film(BaseModel, ConfigOverrideMixin):
     writers: list[Writer] = Field(title='Сценаристы')
     genre: list[Genre] = Field(title='Жанры')
     file_path: Optional[str] = Field(title='Ссылка на файл')
-    # TODO: We don't have `age_restriction` in our DB.
-    # age_restriction: int = Field(title='Возрастной ценз')
 
 
 class FilmAPIResponse(BaseModel, ConfigOverrideMixin):

@@ -14,7 +14,7 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
 class FilmService:
-    """Сервис FilmService (TODO)."""
+    """Сервис FilmService."""
 
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch) -> None:
         self.redis = redis
