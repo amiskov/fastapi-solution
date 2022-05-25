@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "imdb_rating": {
+      "type": "number"
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "creation_date": {
+      "type": ["string", "null"]
+    },
+    "actors": {
+      "type": "array"
+    },
+    "writers": {
+      "type": "array"
+    },
+    "directors": {
+      "type": "array"
+    },
+    "genre": {
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "imdb_rating"
+  ]
+}

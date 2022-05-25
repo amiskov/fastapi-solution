@@ -14,11 +14,61 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
 class FilmService:
-    """Сервис FilmService (TODO)."""
+    """Сервис FilmService."""
 
     def __init__(self, redis: Redis, elastic: AsyncElasticsearch) -> None:
         self.redis = redis
         self.elastic = elastic
+
+    async def get_list(self,
+                       sort: str,
+                       page_size: int,
+                       page_number: int,
+                       genre_id: str) -> list[Film]:
+        """
+        Возвращает список фильмов.
+
+        С опциональной фильтрацией по ID жанра.
+        """
+        is_desc_sorting = sort.startswith('-')
+        order = 'desc' if is_desc_sorting else 'asc'
+        sort_term = sort[1:] if is_desc_sorting else sort
+
+        if genre_id:
+            query = {
+                'bool': {
+                    'filter': [{
+                        'nested': {
+                            'path': 'genre',
+                            'query': {
+                                'bool': {
+                                    'filter': [{
+                                        'term': {
+                                            'genre.id': genre_id,
+                                        },
+                                    }],
+                                },
+                            },
+                        },
+                    }],
+                },
+            }
+        else:
+            query = {'match_all': {}}
+
+        try:
+            doc = await self.elastic.search(
+                index='movies',
+                body={
+                    'sort': {sort_term: {'order': order}},
+                    'size': page_size,
+                    'from': (page_number - 1) * page_size,
+                    'query': query})
+        except NotFoundError:
+            return []
+
+        films = [Film(**hit['_source']) for hit in doc['hits']['hits']]
+        return films
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         """
@@ -85,6 +135,33 @@ class FilmService:
         await self.redis.set(film.id, film.json(),
                              expire=FILM_CACHE_EXPIRE_IN_SECONDS)
 
+    async def get_search_result(self,
+                                query: str,
+                                page_size: int,
+                                page_number: int) -> list[Film]:
+        """Возвращает список фильмов, соответствующий критериям поиска."""
+        search_query = {
+            'multi_match': {
+                'query': query,
+                'fields': ['title^3', 'description'],
+                'operator': 'and',
+                'fuzziness': 'AUTO',
+            },
+        }
+        try:
+            doc = await self.elastic.search(
+                index='movies',
+                body={
+                    'size': page_size,
+                    'from': (page_number - 1) * page_size,
+                    'query': search_query,
+                })
+        except NotFoundError:
+            return []
+
+        films = [Film(**hit['_source']) for hit in doc['hits']['hits']]
+        return films
+
 
 @lru_cache()
 def get_film_service(
@@ -93,8 +170,6 @@ def get_film_service(
 ) -> FilmService:
     """
     Сервис по загрузке кинопроизведений.
-
-    TODO!
 
     Args:
         redis:
