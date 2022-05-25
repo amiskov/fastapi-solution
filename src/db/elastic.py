@@ -1,4 +1,4 @@
-"""TODO: оформить."""
+"""Загрузка ElasticSearch."""
 from typing import Optional
 
 from elasticsearch import AsyncElasticsearch
@@ -7,5 +7,5 @@ es: Optional[AsyncElasticsearch] = None
 
 
 async def get_elastic() -> AsyncElasticsearch:
-    """TODO: оформить."""
+    """Загрузка ElasticSearch."""
     return es

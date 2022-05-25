@@ -20,7 +20,7 @@ class Film(BaseModel, ConfigOverrideMixin):
     director: list[str] = Field(title='Режиссёры')
     actors: list[Actor] = Field(title='Актёры')
     writers: list[Writer] = Field(title='Сценаристы')
-    genre: list[Genre] = Field(title='Жанры')
+    genre: list[Genre] = Field(title='Жанры', default_factory=list)
     file_path: Optional[str] = Field(title='Ссылка на файл')
 
 
