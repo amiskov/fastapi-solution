@@ -7,7 +7,7 @@ from aioredis import Redis
 from pydantic import BaseModel
 from pydantic.json import pydantic_encoder
 
-CachedData = Union[BaseModel, list[BaseModel]]
+DEFAULT_TIME_TO_LIVE = 60 * 5
 
 redis: Optional[Redis] = None
 
@@ -17,33 +17,70 @@ async def get_redis() -> Redis:
     return redis
 
 
-def gen_key(model_name: str,
-            fn_name: str,
-            args: tuple,
-            kwargs: dict) -> str:
+def cache_details(
+        model_class: Type[BaseModel],
+        ttl: int = DEFAULT_TIME_TO_LIVE,
+) -> Callable:
+    """
+    Provide a caching decorator for a single API resource of `model_class`.
+
+    E.g. for a Film details.
+    """
+
+    def restore_data(raw_data: bytes) -> Optional[model_class]:
+        return model_class.parse_raw(raw_data)
+
+    return _cache(model_class, restore_data, ttl)
+
+
+def cache_list(
+        model_class: Type[BaseModel],
+        ttl: int = DEFAULT_TIME_TO_LIVE,
+) -> Callable:
+    """
+    Provide a caching decorator for a list of API resources of `model_class`.
+
+    E.g. for a list of Films.
+    """
+
+    def restore_data(raw_data: bytes) -> list[model_class]:
+        parsed_cache = orjson.loads(raw_data)
+        return [model_class(**d) for d in parsed_cache]
+
+    return _cache(model_class, restore_data, ttl)
+
+
+def gen_key(
+        model_name: str,
+        fn_name: str,
+        key_args: tuple,
+        key_kwargs: dict,
+) -> str:
     """Return a caching key based on model, method, and its arguments."""
-    args_part = list(args[1:])
-    kwargs_part = [f'{k}={v}' for k, v in kwargs.items() if v is not None]
+    args_part = list(key_args[1:])
+    kwargs_part = [f'{k}={v}' for k, v in key_kwargs.items() if v is not None]
     key_parts = [model_name, fn_name] + args_part + kwargs_part
     return ':'.join(key_parts)
 
 
-def cache(model_class: Type[BaseModel] = None,
-          is_compound: bool = False,
-          ttl: int = 60) -> Callable:
+def _cache(
+        model_class: Type[BaseModel],
+        data_restorer: Callable,
+        ttl: int,
+) -> Callable:
     """Return decorator for caching the result of calling `fn`."""
 
-    def _cache(fn: Callable) -> Callable:
+    def __cache(fn: Callable) -> Callable:
+
         @wraps(fn)
-        async def _wrapper(*args, **kwargs) -> CachedData:
+        async def _wrapper(
+                *args,
+                **kwargs,
+        ) -> Union[BaseModel, list[BaseModel]]:
             key = gen_key(model_class.__name__, fn.__name__, args, kwargs)
             cached_data = await redis.get(key)
             if cached_data:
-                if is_compound:
-                    parsed_cache = orjson.loads(cached_data)
-                    data = [model_class(**d) for d in parsed_cache]
-                else:
-                    data = model_class.parse_raw(cached_data)
+                data = data_restorer(cached_data)
             else:
                 data = await fn(*args, **kwargs)
                 data_json = orjson.dumps(data, default=pydantic_encoder)
@@ -52,4 +89,4 @@ def cache(model_class: Type[BaseModel] = None,
 
         return _wrapper
 
-    return _cache
+    return __cache
