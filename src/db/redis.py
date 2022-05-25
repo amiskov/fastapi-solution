@@ -56,7 +56,7 @@ def gen_key(
         key_args: tuple,
         key_kwargs: dict,
 ) -> str:
-    """Return a caching key based on model, method, and its arguments."""
+    """Return a caching key based on model, method, and its parameters."""
     args_part = list(key_args[1:])
     kwargs_part = [f'{k}={v}' for k, v in key_kwargs.items() if v is not None]
     key_parts = [model_name, fn_name] + args_part + kwargs_part
