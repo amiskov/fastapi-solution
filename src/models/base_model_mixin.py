@@ -14,7 +14,7 @@ class ConfigOverrideMixin:
     """Перегружает методы из базовой модели Pydantic."""
 
     class Config:
-        """Более лучшие методы для."""
+        """Более производительные методы для обработки JSON."""
 
         json_loads = orjson.loads
         json_dumps = orjson_dumps
