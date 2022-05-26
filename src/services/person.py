@@ -7,10 +7,10 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
 from db.elastic import get_elastic
-from db.redis import get_redis
+from db.redis import cache_details, cache_list, get_redis
 from models.person import Person
 
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
+PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
 class PersonsService:
@@ -20,6 +20,7 @@ class PersonsService:
         self.redis = redis
         self.elastic = elastic
 
+    @cache_list(Person, ttl=PERSON_CACHE_EXPIRE_IN_SECONDS)
     async def get_list(
             self,
             sort: str,
@@ -50,28 +51,10 @@ class PersonsService:
         persons = [Person(**hit['_source']) for hit in doc['hits']['hits']]
         return persons
 
+    @cache_details(Person, ttl=PERSON_CACHE_EXPIRE_IN_SECONDS)
     async def get_by_id(self, person_id: str) -> Optional[Person]:
         """
         Загрузка данных по id.
-
-        Args:
-            person_id:
-
-        Returns:
-            Person (optional):
-        """
-        person = await self._person_from_cache(person_id)
-        if not person:
-            person = await self._get_person_from_elastic(person_id)
-            if not person:
-                return None
-            await self._put_person_to_cache(person)
-
-        return person
-
-    async def _get_person_from_elastic(self, person_id: str) -> Optional[Person]:
-        """
-        Загрузка персоны из ElasticSearch.
 
         Args:
             person_id:
@@ -85,36 +68,7 @@ class PersonsService:
             return None
         return Person(**doc['_source'])
 
-    async def _person_from_cache(self, person_id: str) -> Optional[Person]:
-        """
-        Загрузка персоны из кэша (redis).
-
-        Args:
-            person_id:
-
-        Returns:
-            Person (optional):
-        """
-        data = await self.redis.get(person_id)
-        if not data:
-            return None
-
-        person = Person.parse_raw(data)
-        return person
-
-    async def _put_person_to_cache(self, person: Person) -> None:
-        """
-        Загрузка персоны в кэш (redis).
-
-        Args:
-            person:
-
-        Returns:
-            None.
-        """
-        await self.redis.set(person.id, person.json(),
-                             expire=FILM_CACHE_EXPIRE_IN_SECONDS)
-
+    @cache_list(Person, ttl=PERSON_CACHE_EXPIRE_IN_SECONDS)
     async def get_search_result(
             self,
             query: str,

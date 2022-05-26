@@ -7,10 +7,10 @@ from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
 from db.elastic import get_elastic
-from db.redis import get_redis
+from db.redis import cache_details, cache_list, get_redis
 from models.genre import Genre
 
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
+GENRE_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
 class GenresService:
@@ -20,6 +20,7 @@ class GenresService:
         self.redis = redis
         self.elastic = elastic
 
+    @cache_list(Genre, ttl=GENRE_CACHE_EXPIRE_IN_SECONDS)
     async def get_list(
             self,
             sort: str,
@@ -50,28 +51,10 @@ class GenresService:
         genres = [Genre(**hit['_source']) for hit in doc['hits']['hits']]
         return genres
 
+    @cache_details(Genre, ttl=GENRE_CACHE_EXPIRE_IN_SECONDS)
     async def get_by_id(self, genre_id: str) -> Optional[Genre]:
         """
         Загрузка данных по id.
-
-        Args:
-            genre_id:
-
-        Returns:
-            Genre (optional):
-        """
-        genre = await self._genre_from_cache(genre_id)
-        if not genre:
-            genre = await self._get_genre_from_elastic(genre_id)
-            if not genre:
-                return None
-            await self._put_genre_to_cache(genre)
-
-        return genre
-
-    async def _get_genre_from_elastic(self, genre_id: str) -> Optional[Genre]:
-        """
-        Загрузка жанра из ElasticSearch.
 
         Args:
             genre_id:
@@ -85,36 +68,7 @@ class GenresService:
             return None
         return Genre(**doc['_source'])
 
-    async def _genre_from_cache(self, genre_id: str) -> Optional[Genre]:
-        """
-        Загрузка жанра из кэша (redis).
-
-        Args:
-            genre_id:
-
-        Returns:
-            Genre (optional):
-        """
-        data = await self.redis.get(genre_id)
-        if not data:
-            return None
-
-        genre = Genre.parse_raw(data)
-        return genre
-
-    async def _put_genre_to_cache(self, genre: Genre) -> None:
-        """
-        Загрузка жанра в кэш (redis).
-
-        Args:
-            genre:
-
-        Returns:
-            None.
-        """
-        await self.redis.set(genre.id, genre.json(),
-                             expire=FILM_CACHE_EXPIRE_IN_SECONDS)
-
+    @cache_list(Genre, ttl=GENRE_CACHE_EXPIRE_IN_SECONDS)
     async def get_search_result(
             self,
             query: str,
