@@ -1,6 +1,5 @@
 FROM python:3.9-slim-buster
-ENV PORT 8000
-EXPOSE ${PORT}/tcp
+
 WORKDIR /app
 RUN addgroup --system appuser && adduser --system --group appuser
 

@@ -19,4 +19,4 @@ class GenreAPIResponse(BaseModel, ConfigOverrideMixin):
 
     id: str
     name: str = Field(title='Название жанра')
-    description: str = Field(title='Описание жанра')
+    description: Optional[str] = Field(title='Описание жанра')
