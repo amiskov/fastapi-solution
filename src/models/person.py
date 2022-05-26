@@ -11,6 +11,13 @@ class Person(BaseModel, ConfigOverrideMixin):
     name: str
 
 
+class PersonAPIResponse(BaseModel, ConfigOverrideMixin):
+    """Модель персон для API Response."""
+
+    id: str
+    name: str
+
+
 class Actor(Person):
     """Модель актёра."""
 
