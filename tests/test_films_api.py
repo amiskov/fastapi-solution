@@ -1,7 +1,7 @@
+import json
 import pathlib
 
 import requests
-import json
 from jsonschema import validate
 from jsonschema.validators import RefResolver
 
