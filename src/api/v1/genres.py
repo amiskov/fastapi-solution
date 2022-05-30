@@ -1,9 +1,9 @@
 """API жанров."""
-from http import HTTPStatus
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 
+from errors import GenreNotFoundException, MissedQueryParameterException
 from models.genre import GenreAPIResponse
 from services.genre import GenresService, get_genres_service
 
@@ -19,22 +19,13 @@ async def genres_search(
 ) -> list[GenreAPIResponse]:
     """Возвращает список жанров для отправки по API, соответствующий критериям поиска."""
     if not query:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Query parameter is required.',
-        )
+        raise MissedQueryParameterException(parameter='query')
 
     search_result = await genre_service.get_search_result(
         query=query,
         page_size=page_size,
         page_number=page_number,
     )
-
-    if not search_result:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail='Genres not found.',
-        )
 
     return [GenreAPIResponse(**item.dict()) for item in search_result]
 
@@ -52,13 +43,6 @@ async def genres_list(
         page_size=page_size,
         page_number=page_number,
     )
-
-    if not genres:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail='genres not found',
-        )
-
     return [GenreAPIResponse(**item.dict()) for item in genres]
 
 
@@ -79,9 +63,6 @@ async def genre_details(
     genre = await genre_service.get_by_id(genre_id)
 
     if not genre:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail='genre not found',
-        )
+        raise GenreNotFoundException()
 
     return GenreAPIResponse(**genre.dict())
