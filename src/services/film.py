@@ -3,11 +3,12 @@ from functools import lru_cache
 from typing import Optional
 
 from aioredis import Redis
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
+from db.data import DataProvider, ElasticDataProvider
 from db.elastic import get_elastic
-from db.redis import cache_details, cache_list, get_redis
+from db.redis import get_redis
 from models.film import Film
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
@@ -16,20 +17,16 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 class FilmService:
     """Сервис FilmService."""
 
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch) -> None:
-        self.redis = redis
-        self.elastic = elastic
+    def __init__(self, data_provider: DataProvider) -> None:
+        self.db = data_provider
 
-    @cache_details(Film, ttl=FILM_CACHE_EXPIRE_IN_SECONDS)
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         """Загрузка кинопроизведения по id."""
-        try:
-            doc = await self.elastic.get('movies', film_id)
-        except NotFoundError:
+        res = await self.db.get_by_id(film_id)
+        if not res:
             return None
-        return Film(**doc['_source'])
+        return Film(**res)
 
-    @cache_list(Film, ttl=FILM_CACHE_EXPIRE_IN_SECONDS)
     async def get_list(
             self,
             sort: str,
@@ -37,7 +34,6 @@ class FilmService:
             page_number: int,
             genre_id: str,
     ) -> list[Film]:
-        """Возвращает список фильмов с опциональной фильтрацией по ID жанра."""
         is_desc_sorting = sort.startswith('-')
         order = 'desc' if is_desc_sorting else 'asc'
         sort_term = sort[1:] if is_desc_sorting else sort
@@ -64,26 +60,14 @@ class FilmService:
             }
         else:
             query = {'match_all': {}}
+        films = await self.db.get_list(
+            sort={sort_term: {'order': order}},
+            page_size=page_size,
+            page_number=page_number,
+            query=query
+        )
+        return [Film(**item) for item in films]
 
-        body = {
-            'sort': {sort_term: {'order': order}},
-            'size': page_size,
-            'from': (page_number - 1) * page_size,
-            'query': query,
-        }
-
-        return await self._get_list_from_elastic(body)
-
-    async def _get_list_from_elastic(self, body: dict) -> list[Film]:
-        try:
-            doc = await self.elastic.search(index='movies', body=body)
-        except NotFoundError:
-            return []
-
-        films = [Film(**hit['_source']) for hit in doc['hits']['hits']]
-        return films
-
-    @cache_list(Film, ttl=FILM_CACHE_EXPIRE_IN_SECONDS)
     async def get_search_result(
             self,
             query: str,
@@ -99,12 +83,12 @@ class FilmService:
                 'fuzziness': 'AUTO',
             },
         }
-        body = {
-            'size': page_size,
-            'from': (page_number - 1) * page_size,
-            'query': search_query,
-        }
-        return await self._get_list_from_elastic(body)
+        found_films = await self.db.get_search_result(
+            page_size=page_size,
+            page_number=page_number,
+            search_query=search_query,
+        )
+        return [Film(**item) for item in found_films]
 
 
 @lru_cache()
@@ -122,4 +106,6 @@ def get_film_service(
     Returns:
         FilmService:
     """
-    return FilmService(redis, elastic)
+    return FilmService(
+        data_provider=ElasticDataProvider(elastic=elastic, es_index='movies')
+    )
