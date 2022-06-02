@@ -23,7 +23,7 @@ class Cache(ABC):
 DEFAULT_TIME_TO_LIVE = 60 * 5
 
 
-class CacheWithRedis(Cache):
+class RedisCache(Cache):
     def __init__(
             self,
             redis: Redis,

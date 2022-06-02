@@ -1,13 +1,15 @@
 """Сервис загрузки кинопроизведений."""
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import Optional
 
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
+from pydantic import BaseModel
 
-from db.cache import Cache, CacheWithRedis
-from db.data import DataProvider, FilmsElasticDataProvider
+from db.cache import Cache, RedisCache
+from db.data import DataProvider, FilmsDataProvider
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
@@ -15,56 +17,36 @@ from models.film import Film
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
-class FilmService:
-    """Сервис FilmService."""
+@dataclass
+class Service:
+    db: DataProvider
+    cache: Cache
 
-    def __init__(
-            self,
-            data_provider: DataProvider,
-            cache_provider: Cache,
-    ) -> None:
-        self.db = data_provider
-        self.cache = cache_provider
-
-    async def get_by_id(self, film_id: str) -> Optional[Film]:
-        """Загрузка кинопроизведения по id."""
-        res = await self.cache.get_entity_from_cache_or_db(
+    async def get_by_id(self, entity_id: str) -> Optional[BaseModel]:
+        """Загрузка сущности по id."""
+        return await self.cache.get_entity_from_cache_or_db(
             get_entity_from_db_fn=self.db.get_by_id,
-            entity_id=film_id
+            entity_id=entity_id
         )
-        return res
 
-    async def get_list(
-            self,
-            **kwargs
-    ) -> list[Film]:
-        films = await self.cache.get_list_from_cache_or_db(
+    async def get_list(self, **kwargs) -> list[BaseModel]:
+        return await self.cache.get_list_from_cache_or_db(
             get_list_from_db_fn=self.db.get_list,
             **kwargs,
         )
-        return films
 
-    async def get_search_result(
-            self,
-            query: str,
-            page_size: int,
-            page_number: int,
-    ) -> list[Film]:
+    async def get_search_result(self, **kwargs) -> list[BaseModel]:
         """Возвращает список фильмов, соответствующий критериям поиска."""
-        search_query = {
-            'multi_match': {
-                'query': query,
-                'fields': ['title^3', 'description'],
-                'operator': 'and',
-                'fuzziness': 'AUTO',
-            },
-        }
-        found_films = await self.db.get_search_result(
-            page_size=page_size,
-            page_number=page_number,
-            search_query=search_query,
+        return await self.cache.get_list_from_cache_or_db(
+            get_list_from_db_fn=self.db.get_search_result,
+            **kwargs,
         )
-        return [Film(**item) for item in found_films]
+
+
+@dataclass
+class FilmService(Service):
+    db: FilmsDataProvider
+    cache: RedisCache
 
 
 @lru_cache()
@@ -83,6 +65,6 @@ def get_film_service(
         FilmService:
     """
     return FilmService(
-        data_provider=FilmsElasticDataProvider(elastic=elastic, es_index='movies'),
-        cache_provider=CacheWithRedis(redis=redis, caching_model_class=Film)
+        db=FilmsDataProvider(es_client=elastic, es_index='movies'),
+        cache=RedisCache(redis=redis, caching_model_class=Film)
     )

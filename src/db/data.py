@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Optional
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
@@ -18,47 +19,44 @@ class DataProvider(ABC):
         pass
 
 
-class ElasticDataProvider(DataProvider):
-    def __init__(self, elastic: AsyncElasticsearch, es_index: str) -> None:
-        self.es_index = es_index
-        self.elastic = elastic
+@dataclass
+class ElasticDataProvider:
+    es_client: AsyncElasticsearch
+    es_index: str
 
     async def get_by_id(self, entity_id: str) -> Optional[dict]:
         """Загрузка сущности по id."""
         try:
-            doc = await self.elastic.get(self.es_index, entity_id)
+            doc = await self.es_client.get(self.es_index, entity_id)
         except NotFoundError:
             return None
         return doc['_source']
 
-    def get_list(self, **params) -> list:
-        pass
-
-    def get_search_result(self, **params) -> list:
-        pass
-
     async def _get_list_from_elastic(self, body: dict) -> list:
         try:
-            doc = await self.elastic.search(index=self.es_index, body=body)
+            doc = await self.es_client.search(index=self.es_index, body=body)
         except NotFoundError:
             return []
         items = [hit['_source'] for hit in doc['hits']['hits']]
         return items
 
 
-class FilmsElasticDataProvider(ElasticDataProvider):
-    def __init__(self, elastic: AsyncElasticsearch, es_index: str) -> None:
-        super().__init__(elastic, es_index)
-
+class FilmsDataProvider(ElasticDataProvider, DataProvider):
     async def get_search_result(
             self,
-            search_query: dict,
+            query: str,
             page_size: int,
             page_number: int,
     ) -> list:
         """Возвращает список сущностей, соответствующий критериям поиска."""
-        # TODO: Too much for DataProvideer!
-        # We have Films, Genres, Persons and each has different `body`
+        search_query = {
+            'multi_match': {
+                'query': query,
+                'fields': ['title^3', 'description'],
+                'operator': 'and',
+                'fuzziness': 'AUTO',
+            },
+        }
         body = {
             'size': page_size,
             'from': (page_number - 1) * page_size,
@@ -73,7 +71,7 @@ class FilmsElasticDataProvider(ElasticDataProvider):
             page_number: int,
             genre_id: str,
     ) -> list:
-        """Возвращает список сущностей с опциональной фильтрацией по ID жанра."""
+        """Возвращает список фильмов с опциональной фильтрацией по ID жанра."""
 
         is_desc_sorting = sort.startswith('-')
         order = 'desc' if is_desc_sorting else 'asc'
