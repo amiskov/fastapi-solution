@@ -7,7 +7,7 @@ from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from db.cache import Cache, CacheWithRedis
-from db.data import DataProvider, ElasticDataProvider
+from db.data import DataProvider, FilmsElasticDataProvider
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.film import Film
@@ -29,54 +29,20 @@ class FilmService:
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         """Загрузка кинопроизведения по id."""
         res = await self.cache.get_entity_from_cache_or_db(
-            get_entity_fn=self.db.get_by_id,
+            get_entity_from_db_fn=self.db.get_by_id,
             entity_id=film_id
         )
-        if not res:
-            return None
-        return Film(**res)
+        return res
 
     async def get_list(
             self,
-            sort: str,
-            page_size: int,
-            page_number: int,
-            genre_id: str,
+            **kwargs
     ) -> list[Film]:
-        is_desc_sorting = sort.startswith('-')
-        order = 'desc' if is_desc_sorting else 'asc'
-        sort_term = sort[1:] if is_desc_sorting else sort
-
-        if genre_id:
-            genre_nested_query = {
-                'path': 'genre',
-                'query': {
-                    'bool': {
-                        'filter': [{
-                            'term': {
-                                'genre.id': genre_id,
-                            },
-                        }],
-                    },
-                },
-            }
-            query = {
-                'bool': {
-                    'filter': [{
-                        'nested': genre_nested_query,
-                    }],
-                },
-            }
-        else:
-            query = {'match_all': {}}
         films = await self.cache.get_list_from_cache_or_db(
-            self.db.get_list,
-            sort={sort_term: {'order': order}},
-            page_size=page_size,
-            page_number=page_number,
-            query=query
+            get_list_from_db_fn=self.db.get_list,
+            **kwargs,
         )
-        return [Film(**item) for item in films]
+        return films
 
     async def get_search_result(
             self,
@@ -117,6 +83,6 @@ def get_film_service(
         FilmService:
     """
     return FilmService(
-        data_provider=ElasticDataProvider(elastic=elastic, es_index='movies'),
+        data_provider=FilmsElasticDataProvider(elastic=elastic, es_index='movies'),
         cache_provider=CacheWithRedis(redis=redis, caching_model_class=Film)
     )

@@ -9,11 +9,14 @@ from pydantic.json import pydantic_encoder
 
 class Cache(ABC):
     @abstractmethod
-    def get_entity_from_cache_or_db(self, *args, **kwargs):
+    async def get_entity_from_cache_or_db(
+            self,
+            **kwargs
+    ) -> Optional[BaseModel]:
         pass
 
     @abstractmethod
-    def get_list_from_cache_or_db(self, *args, **kwargs):
+    async def get_list_from_cache_or_db(self, **kwargs) -> list[BaseModel]:
         pass
 
 
@@ -33,56 +36,53 @@ class CacheWithRedis(Cache):
 
     async def get_entity_from_cache_or_db(
             self,
-            get_entity_fn: Callable,
+            get_entity_from_db_fn: Callable,
             entity_id: str
     ) -> Optional[BaseModel]:
 
         """
-        Retrieve the entity from cache (e.g. Film details).
-        If there's no entity in cache, then use `get_entity_fn` function
+        Get the entity from cache (e.g. Film details).
+        If it's not in cache, then use `get_entity_from_db_fn` function
         and `entity_id` to get the entity from the original data source.
         """
 
-        key = self._get_caching_key(get_entity_fn.__name__, (entity_id,), {})
+        key = self._get_caching_key(
+            get_entity_from_db_fn.__name__,
+            entity_id=entity_id,
+        )
         cached_data = await self.redis.get(key)
         if cached_data:
-            data = self.model_class.parse_raw(cached_data)
+            data = cached_data
         else:
-            data = await get_entity_fn(entity_id)
-            data_json = orjson.dumps(data, default=pydantic_encoder)
-            await self.redis.set(key, data_json, expire=self.ttl)
-        return data
+            data_raw = await get_entity_from_db_fn(entity_id)
+            data = orjson.dumps(data_raw, default=pydantic_encoder)
+            await self.redis.set(key, data, expire=self.ttl)
+        return self.model_class.parse_raw(data)
 
     async def get_list_from_cache_or_db(
             self,
-            get_list_fn: Callable,
+            get_list_from_db_fn: Callable,
             **kwargs
-    ) -> list[dict]:
+    ) -> list[BaseModel]:
         """
-        Get list of entities from cache (e.g. list of Films) or get them from
-        the original data source with `get_list_fn` and `**kwargs`.
+        Get list of entities from cache (e.g. list of Films).
+        If they're not cached, then get them from the original data source
+        with `get_list_from_db_fn` and `**kwargs`.
         """
 
-        key = self._get_caching_key(get_list_fn.__name__, tuple(), kwargs)
+        key = self._get_caching_key(get_list_from_db_fn.__name__, **kwargs)
         cached_data = await self.redis.get(key)
         if cached_data:
-            data = orjson.loads(cached_data)
+            data = cached_data
         else:
-            data = await get_list_fn(**kwargs)
-            data_json = orjson.dumps(data, default=pydantic_encoder)
-            await self.redis.set(key, data_json, expire=self.ttl)
-        return data
+            data_raw = await get_list_from_db_fn(**kwargs)
+            data = orjson.dumps(data_raw, default=pydantic_encoder)
+            await self.redis.set(key, data, expire=self.ttl)
+        return [self.model_class(**entity) for entity in orjson.loads(data)]
 
-    def _get_caching_key(
-            self,
-            fn_name: str,
-            key_args: tuple,
-            key_kwargs: dict,
-    ) -> str:
+    def _get_caching_key(self, fn_name: str, **kwargs) -> str:
         """Return a caching key based on model, method, and its parameters."""
-        args_part = list(key_args)
-        kwargs_part = [f'{k}={v}' for k, v in key_kwargs.items() if
-                       v is not None]
         model_name = self.model_class.__name__
-        key_parts = [model_name, fn_name] + args_part + kwargs_part
-        return '/'.join(key_parts)
+        params = [f'{k}={v}' for k, v in kwargs.items() if v is not None]
+        caching_key_parts = [model_name, fn_name] + params
+        return '/'.join(caching_key_parts)
