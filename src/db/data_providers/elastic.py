@@ -25,8 +25,9 @@ class ElasticDataProvider:
             return None
         return doc['_source']
 
-    async def get_list(self, **kwargs) -> list:
-        """Возвращает список сущностей без фильтрации."""
+    async def get_list(self, **kwargs) -> list[dict]:
+        """Возвращает список сущностей без фильтрации с параметрами,
+        заданными в `kwargs`."""
         return await self._get_list_from_elastic(
             query={'match_all': {}},
             **kwargs,
