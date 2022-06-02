@@ -6,6 +6,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
+from db.cache import Cache, CacheWithRedis
 from db.data import DataProvider, ElasticDataProvider
 from db.elastic import get_elastic
 from db.redis import get_redis
@@ -17,12 +18,20 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 class FilmService:
     """Сервис FilmService."""
 
-    def __init__(self, data_provider: DataProvider) -> None:
+    def __init__(
+            self,
+            data_provider: DataProvider,
+            cache_provider: Cache,
+    ) -> None:
         self.db = data_provider
+        self.cache = cache_provider
 
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         """Загрузка кинопроизведения по id."""
-        res = await self.db.get_by_id(film_id)
+        res = await self.cache.get_entity_from_cache_or_db(
+            get_entity_fn=self.db.get_by_id,
+            entity_id=film_id
+        )
         if not res:
             return None
         return Film(**res)
@@ -60,7 +69,8 @@ class FilmService:
             }
         else:
             query = {'match_all': {}}
-        films = await self.db.get_list(
+        films = await self.cache.get_list_from_cache_or_db(
+            self.db.get_list,
             sort={sort_term: {'order': order}},
             page_size=page_size,
             page_number=page_number,
@@ -107,5 +117,6 @@ def get_film_service(
         FilmService:
     """
     return FilmService(
-        data_provider=ElasticDataProvider(elastic=elastic, es_index='movies')
+        data_provider=ElasticDataProvider(elastic=elastic, es_index='movies'),
+        cache_provider=CacheWithRedis(redis=redis, caching_model_class=Film)
     )
