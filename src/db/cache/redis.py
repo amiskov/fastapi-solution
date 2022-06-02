@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+"""Caching API queries."""
+from dataclasses import dataclass
 from typing import Callable, Optional, Type
 
 import orjson
@@ -6,57 +7,45 @@ from aioredis import Redis
 from pydantic import BaseModel
 from pydantic.json import pydantic_encoder
 
-
-class Cache(ABC):
-    @abstractmethod
-    async def get_entity_from_cache_or_db(
-            self,
-            **kwargs
-    ) -> Optional[BaseModel]:
-        pass
-
-    @abstractmethod
-    async def get_list_from_cache_or_db(self, **kwargs) -> list[BaseModel]:
-        pass
-
+from db.cache.base import BaseCache
 
 DEFAULT_TIME_TO_LIVE = 60 * 5
 
+redis: Optional[Redis] = None
 
-class RedisCache(Cache):
-    def __init__(
-            self,
-            redis: Redis,
-            caching_model_class: Type[BaseModel],
-            ttl: int = DEFAULT_TIME_TO_LIVE
-    ) -> None:
-        self.redis = redis
-        self.model_class = caching_model_class
-        self.ttl = ttl
+
+async def get_redis() -> Redis:
+    """Return the Redis instance."""
+    return redis
+
+
+@dataclass
+class RedisCache(BaseCache):
+    redis_client: Redis
+    model_class: Type[BaseModel]
+    ttl: int = DEFAULT_TIME_TO_LIVE
 
     async def get_entity_from_cache_or_db(
             self,
             get_entity_from_db_fn: Callable,
             entity_id: str
     ) -> Optional[BaseModel]:
-
         """
         Get the entity from cache (e.g. Film details).
         If it's not in cache, then use `get_entity_from_db_fn` function
         and `entity_id` to get the entity from the original data source.
         """
-
         key = self._get_caching_key(
             get_entity_from_db_fn.__name__,
             entity_id=entity_id,
         )
-        cached_data = await self.redis.get(key)
+        cached_data = await self.redis_client.get(key)
         if cached_data:
             data = cached_data
         else:
             data_raw = await get_entity_from_db_fn(entity_id)
             data = orjson.dumps(data_raw, default=pydantic_encoder)
-            await self.redis.set(key, data, expire=self.ttl)
+            await self.redis_client.set(key, data, expire=self.ttl)
         return self.model_class.parse_raw(data)
 
     async def get_list_from_cache_or_db(
@@ -69,15 +58,14 @@ class RedisCache(Cache):
         If they're not cached, then get them from the original data source
         with `get_list_from_db_fn` and `**kwargs`.
         """
-
         key = self._get_caching_key(get_list_from_db_fn.__name__, **kwargs)
-        cached_data = await self.redis.get(key)
+        cached_data = await self.redis_client.get(key)
         if cached_data:
             data = cached_data
         else:
             data_raw = await get_list_from_db_fn(**kwargs)
             data = orjson.dumps(data_raw, default=pydantic_encoder)
-            await self.redis.set(key, data, expire=self.ttl)
+            await self.redis_client.set(key, data, expire=self.ttl)
         return [self.model_class(**entity) for entity in orjson.loads(data)]
 
     def _get_caching_key(self, fn_name: str, **kwargs) -> str:

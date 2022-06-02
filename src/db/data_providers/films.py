@@ -1,47 +1,8 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Optional
-
-from elasticsearch import AsyncElasticsearch, NotFoundError
+from db.data_providers.base import BaseDataProvider
+from db.data_providers.elastic import ElasticDataProvider
 
 
-class DataProvider(ABC):
-    @abstractmethod
-    async def get_by_id(self, entity_id: str) -> Optional[dict]:
-        pass
-
-    @abstractmethod
-    async def get_list(self, **params) -> list:
-        pass
-
-    @abstractmethod
-    async def get_search_result(self, **params) -> list:
-        pass
-
-
-@dataclass
-class ElasticDataProvider:
-    es_client: AsyncElasticsearch
-    es_index: str
-
-    async def get_by_id(self, entity_id: str) -> Optional[dict]:
-        """Загрузка сущности по id."""
-        try:
-            doc = await self.es_client.get(self.es_index, entity_id)
-        except NotFoundError:
-            return None
-        return doc['_source']
-
-    async def _get_list_from_elastic(self, body: dict) -> list:
-        try:
-            doc = await self.es_client.search(index=self.es_index, body=body)
-        except NotFoundError:
-            return []
-        items = [hit['_source'] for hit in doc['hits']['hits']]
-        return items
-
-
-class FilmsDataProvider(ElasticDataProvider, DataProvider):
+class FilmsDataProvider(ElasticDataProvider, BaseDataProvider):
     async def get_search_result(
             self,
             query: str,
