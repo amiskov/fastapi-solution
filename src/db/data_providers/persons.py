@@ -25,25 +25,6 @@ class PersonsDataProvider(ElasticDataProvider, BaseDataProvider):
         }
         return await self._get_list_from_elastic(body)
 
-    async def get_search_result(
-            self,
-            query: str,
-            page_size: int,
-            page_number: int,
-    ) -> list:
+    async def get_search_result(self, **kwargs) -> list:
         """Возвращает список персон, соответствующий критериям поиска."""
-        search_query = {
-            'multi_match': {
-                'query': query,
-                'fields': ['name'],
-                'operator': 'and',
-                'fuzziness': 'AUTO',
-            },
-        }
-        body = {
-            'size': page_size,
-            'from': (page_number - 1) * page_size,
-            'query': search_query,
-        }
-
-        return await self._get_list_from_elastic(body)
+        return await self._search_elastic(**kwargs, fields=['name'])
