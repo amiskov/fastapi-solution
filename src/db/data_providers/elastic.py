@@ -25,7 +25,30 @@ class ElasticDataProvider:
             return None
         return doc['_source']
 
-    async def _get_list_from_elastic(self, body: dict) -> list[dict]:
+    async def get_list(self, **kwargs) -> list:
+        """Возвращает список сущностей без фильтрации."""
+        return await self._get_list_from_elastic(
+            query={'match_all': {}},
+            **kwargs,
+        )
+
+    async def _get_list_from_elastic(
+            self,
+            page_size: int,
+            page_number: int,
+            query: dict,
+            sort: Optional[str] = None,
+    ) -> list[dict]:
+        body = {
+            'size': page_size,
+            'from': (page_number - 1) * page_size,
+            'query': query,
+        }
+        if sort:
+            is_desc_sorting = sort.startswith('-')
+            order = 'desc' if is_desc_sorting else 'asc'
+            sort_term = sort[1:] if is_desc_sorting else sort
+            body['sort'] = {sort_term: {'order': order}}
         try:
             doc = await self.es_client.search(index=self.es_index, body=body)
         except NotFoundError:
@@ -36,9 +59,8 @@ class ElasticDataProvider:
     async def _search_elastic(
             self,
             query: str,
-            page_size: int,
-            page_number: int,
-            fields: list[str]
+            fields: list[str],
+            **kwargs,
     ) -> list[dict]:
         search_query = {
             'multi_match': {
@@ -48,9 +70,7 @@ class ElasticDataProvider:
                 'fuzziness': 'AUTO',
             },
         }
-        body = {
-            'size': page_size,
-            'from': (page_number - 1) * page_size,
-            'query': search_query,
-        }
-        return await self._get_list_from_elastic(body)
+        return await self._get_list_from_elastic(
+            query=search_query,
+            **kwargs,
+        )
