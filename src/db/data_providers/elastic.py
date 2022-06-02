@@ -4,6 +4,8 @@ from typing import Optional
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
+from db.data_providers.base import BaseDataProvider
+
 es: Optional[AsyncElasticsearch] = None
 
 
@@ -13,7 +15,7 @@ async def get_elastic() -> AsyncElasticsearch:
 
 
 @dataclass
-class ElasticDataProvider:
+class ElasticDataProvider(BaseDataProvider):
     es_client: AsyncElasticsearch
     es_index: str
 
@@ -32,6 +34,10 @@ class ElasticDataProvider:
             query={'match_all': {}},
             **kwargs,
         )
+
+    async def get_search_result(self, **kwargs) -> list:
+        """Поиск "по умолчанию": вернёт результат поиска по всем полям."""
+        return await self._search_elastic(fields=["*"], **kwargs)
 
     async def _get_list_from_elastic(
             self,

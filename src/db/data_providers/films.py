@@ -1,8 +1,7 @@
-from db.data_providers.base import BaseDataProvider
 from db.data_providers.elastic import ElasticDataProvider
 
 
-class FilmsDataProvider(ElasticDataProvider, BaseDataProvider):
+class FilmsDataProvider(ElasticDataProvider):
     async def get_list(self, genre_id: str, **kwargs) -> list[dict]:
         """Возвращает список фильмов с опциональной фильтрацией по ID жанра."""
         if genre_id:

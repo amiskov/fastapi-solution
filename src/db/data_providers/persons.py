@@ -1,8 +1,7 @@
-from db.data_providers.base import BaseDataProvider
 from db.data_providers.elastic import ElasticDataProvider
 
 
-class PersonsDataProvider(ElasticDataProvider, BaseDataProvider):
+class PersonsDataProvider(ElasticDataProvider):
     async def get_search_result(self, **kwargs) -> list[dict]:
         """Возвращает список персон, соответствующий критериям поиска
         по полям `fields`."""
