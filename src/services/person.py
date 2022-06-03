@@ -10,6 +10,8 @@ from db.elastic import get_elastic
 from db.redis import cache_details, cache_list, get_redis
 from models.person import Person
 
+from core.config import settings
+
 PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
@@ -36,16 +38,21 @@ class PersonsService:
         query = {'match_all': {}}
 
         try:
+            print(f"HERE index {settings.PERSONS_ES_INDEX}")
+            body = {
+                'sort': {sort_term: {'order': order}},
+                'size': page_size,
+                'from': (page_number - 1) * page_size,
+                'query': query,
+            }
+            print(body)
             doc = await self.elastic.search(
-                index='persons',
-                body={
-                    'sort': {sort_term: {'order': order}},
-                    'size': page_size,
-                    'from': (page_number - 1) * page_size,
-                    'query': query,
-                },
+                index=settings.PERSONS_ES_INDEX,
+                body=body,
             )
+            print(f"DOC: {doc}")
         except NotFoundError:
+            print("NOT FOUND")
             return []
 
         persons = [Person(**hit['_source']) for hit in doc['hits']['hits']]
@@ -63,7 +70,7 @@ class PersonsService:
             Person (optional):
         """
         try:
-            doc = await self.elastic.get('persons', person_id)
+            doc = await self.elastic.get(settings.PERSONS_ES_INDEX, person_id)
         except NotFoundError:
             return None
         return Person(**doc['_source'])
@@ -86,7 +93,7 @@ class PersonsService:
         }
         try:
             doc = await self.elastic.search(
-                index='persons',
+                index=settings.PERSONS_ES_INDEX,
                 body={
                     'size': page_size,
                     'from': (page_number - 1) * page_size,
@@ -115,4 +122,5 @@ def get_persons_service(
     Returns:
         PersonsService:
     """
+    print("get_persons_service")
     return PersonsService(redis, elastic)

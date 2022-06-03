@@ -78,10 +78,13 @@ def _cache(
                 **kwargs,
         ) -> Union[BaseModel, list[BaseModel]]:
             key = gen_key(model_class.__name__, fn.__name__, args, kwargs)
+            print(f"RESTORE BY KEY: {key}")
             cached_data = await redis.get(key)
             if cached_data:
+                print(f"DATA EXITS")
                 data = data_restorer(cached_data)
             else:
+                print(f"LOAD DATA")
                 data = await fn(*args, **kwargs)
                 data_json = orjson.dumps(data, default=pydantic_encoder)
                 await redis.set(key, data_json, expire=ttl)

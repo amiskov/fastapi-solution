@@ -10,6 +10,8 @@ from db.elastic import get_elastic
 from db.redis import cache_details, cache_list, get_redis
 from models.film import Film
 
+from core.config import settings
+
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
@@ -24,7 +26,7 @@ class FilmService:
     async def get_by_id(self, film_id: str) -> Optional[Film]:
         """Загрузка кинопроизведения по id."""
         try:
-            doc = await self.elastic.get('movies', film_id)
+            doc = await self.elastic.get(settings.MOVIES_ES_INDEX, film_id)
         except NotFoundError:
             return None
         return Film(**doc['_source'])
@@ -76,7 +78,7 @@ class FilmService:
 
     async def _get_list_from_elastic(self, body: dict) -> list[Film]:
         try:
-            doc = await self.elastic.search(index='movies', body=body)
+            doc = await self.elastic.search(index=settings.MOVIES_ES_INDEX, body=body)
         except NotFoundError:
             return []
 

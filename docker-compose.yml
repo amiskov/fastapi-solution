@@ -72,18 +72,20 @@ services:
       - app
     healthcheck:
       test: "exit 0"
+    ports:
+      - 9200:9200
 
-  etl:
-    container_name: etl
-    image: ghcr.io/vitaliyrakitin/cinema-etl:latest
-    restart: always
-    env_file:
-      - environments/cinema-etl.env
-    depends_on:
-      db:
-        condition: service_healthy
-      elasticsearch:
-        condition: service_healthy
+#  etl:
+#    container_name: etl
+#    image: ghcr.io/vitaliyrakitin/cinema-etl:latest
+#    restart: always
+#    env_file:
+#      - environments/cinema-etl.env
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#      elasticsearch:
+#        condition: service_healthy
 
   cache:
     image: redis:6.2-alpine
@@ -92,6 +94,8 @@ services:
       - cache:/data
     healthcheck:
       test: "exit 0"
+    ports:
+      - 6379:6379
 
 
 volumes:
