@@ -7,7 +7,7 @@
 import pytest
 
 from tests.functional.src.fakedata.genres import fake_es_genres_index
-from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session
+from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session, event_loop
 from tests.functional.src.genres.fixtures import setup, BASE_URL
 from tests.functional.src.utils import remove_index, create_index, clear_cache
 
@@ -17,7 +17,8 @@ async def test_genres_search_no_params(
         setup,
         es_client,
         make_get_request,
-        redis_client
+        redis_client,
+        event_loop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -38,7 +39,8 @@ async def test_genres_search_unknown(
         setup,
         es_client,
         make_get_request,
-        redis_client
+        redis_client,
+        event_loop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -63,7 +65,8 @@ async def test_genres_search_one(
         setup,
         es_client,
         make_get_request,
-        redis_client
+        redis_client,
+        event_loop,
 ) -> None:
     """
     Тест поиска конкретного человека по ручке /genres/search.
@@ -72,13 +75,13 @@ async def test_genres_search_one(
     await fake_es_genres_index(es_client=es_client)
 
     # ==== Run ====
-    response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'Vitaliy Rakitin'})
+    response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'Triller'})
 
     # ==== Asserts ====
     assert response.status == 200
     assert len(response.body) == 1
-    assert response.body[0].get('name') == 'Vitaliy Rakitin'
-    assert response.body[0].get('id') == '1'
+    assert response.body[0].get('name') == 'thriller'
+    assert response.body[0].get('id') == '2'
 
 
 @pytest.mark.asyncio
@@ -88,6 +91,7 @@ async def test_genres_search_many_cache(
         make_get_request,
         redis_client,
         session,
+        event_loop,
 ) -> None:
     """
     Тест поиска множества человек по ручке /genres/search.
@@ -100,20 +104,19 @@ async def test_genres_search_many_cache(
     3. Запрос данных после удаление кеша (в базе 1 подходящий человек);
     """
     def _check_body(response_body):
-        assert len(response_body) == 4
+        assert len(response_body) == 3
         for item in response.body:
             assert item in [
-                {"id": "1", "name": "Vitaliy Rakitin"},
-                {"id": "5", "name": "Vitaliy Mcgee"},
-                {"id": "8", "name": "Vitalii Yoder"},
-                {"id": "10", "name": "Vitaliy Paul"},
+                {'id': '1', 'name': 'horror', 'description': 'scary movie'},
+                {'id': '2', 'name': 'thriller', 'description': 'scary films'},
+                {'id': '7', 'name': 'scary genre', 'description': None},
             ]
 
     # ==== Fake 1 ====
     await fake_es_genres_index(es_client=es_client)
 
     # ==== Run 1 ====
-    response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'Vitaliy'})
+    response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'scary'})
 
     # ==== Asserts 1 ====
     assert response.status == 200
@@ -125,7 +128,7 @@ async def test_genres_search_many_cache(
     await fake_es_genres_index(es_client=es_client, limit=1)
 
     # ==== Run 2 ====
-    response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'Vitaliy'})
+    response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'scary'})
 
     # ==== Asserts 2 ====
     assert response.status == 200
@@ -135,10 +138,9 @@ async def test_genres_search_many_cache(
     await clear_cache(redis_client)
 
     # ==== Run 2 ====
-    response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'Vitaliy'})
+    response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'scary'})
 
     # ==== Asserts 3 ====
     assert response.status == 200
     assert len(response.body) == 1
-    assert response.body[0].get('name') == 'Vitaliy Rakitin'
-    assert response.body[0].get('id') == '1'
+    assert response.body[0] == {'id': '1', 'name': 'horror', 'description': 'scary movie'}

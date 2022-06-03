@@ -35,7 +35,7 @@ async def fake_cache_persons_list_data(
     return await fake_cache_list_data(
         redis_client=redis_client,
         data=fake_persons,
-        data_key='Persons',
+        data_key='Person',
         page_size=page_size,
         page_number=page_number,
         limit=limit,
@@ -50,7 +50,7 @@ async def fake_cache_persons_list_blank(
     """Наполнение кеша редис данными."""
     await fake_cache(
         redis_client=redis_client,
-        key=get_cache_key(data_key='Persons', page_size=page_size, page_number=page_number),
+        key=get_cache_key(data_key='Person', page_size=page_size, page_number=page_number),
         value=[],
     )
 

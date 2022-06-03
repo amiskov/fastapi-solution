@@ -4,16 +4,16 @@ from tests.functional.src.fakedata.utils import fake_cache
 
 fake_genres = [
     {"id": "1", "name": "horror", "description": "scary movie"},
-    {"id": "2", "name": "thriller", "description": "scary"},
-    {"id": "3", "name": "Matilda Beard"},
-    {"id": "4", "name": "Erik Mercer"},
-    {"id": "5", "name": "Vitaliy Mcgee"},
-    {"id": "6", "name": "Carley Faulkner"},
-    {"id": "7", "name": "Milly Padilla"},
-    {"id": "8", "name": "Vitalii Yoder"},
-    {"id": "9", "name": "Ariyah Robles"},
-    {"id": "10", "name": "Vitaliy Paul"},
-    {"id": "11", "name": "Oliver Valencia"},
+    {"id": "2", "name": "thriller", "description": "scary films"},
+    {"id": "3", "name": "comedy", "description": None},
+    {"id": "4", "name": "action", "description": None},
+    {"id": "5", "name": "biopic", "description": None},
+    {"id": "6", "name": "doc", "description": None},
+    {"id": "7", "name": "scary genre", "description": None},
+    {"id": "8", "name": "mystery", "description": None},
+    {"id": "9", "name": "drama", "description": None},
+    {"id": "10", "name": "romantic", "description": None},
+    {"id": "11", "name": "fantasy", "description": None},
 ]
 
 
@@ -35,7 +35,7 @@ async def fake_cache_genres_list_data(
     return await fake_cache_list_data(
         redis_client=redis_client,
         data=fake_genres,
-        data_key='Genres',
+        data_key='Genre',
         page_size=page_size,
         page_number=page_number,
         limit=limit,
@@ -50,7 +50,7 @@ async def fake_cache_genres_list_blank(
     """Наполнение кеша редис данными."""
     await fake_cache(
         redis_client=redis_client,
-        key=get_cache_key(data_key='Genres', page_size=page_size, page_number=page_number),
+        key=get_cache_key(data_key='Genre', page_size=page_size, page_number=page_number),
         value=[],
     )
 

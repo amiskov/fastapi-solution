@@ -9,7 +9,7 @@ from tests.functional.src.fakedata.genres import (
     fake_cache_genres_list_data,
     fake_es_genres_index,
 )
-from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session
+from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session, event_loop
 from tests.functional.src.genres.fixtures import setup, BASE_URL
 
 
@@ -18,7 +18,8 @@ async def test_genres_list_cache_not_exists_es_index_blank(
         setup,
         es_client,
         make_get_request,
-        redis_client
+        redis_client,
+        event_loop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -36,7 +37,13 @@ async def test_genres_list_cache_not_exists_es_index_blank(
 
 
 @pytest.mark.asyncio
-async def test_genres_list_cache_exists_es_index_blank(setup, es_client, make_get_request, redis_client) -> None:
+async def test_genres_list_cache_exists_es_index_blank(
+        setup,
+        es_client,
+        make_get_request,
+        redis_client,
+        event_loop,
+) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
 
@@ -74,7 +81,8 @@ async def test_genres_list_cache_blank_index_not_blank(
         setup,
         es_client,
         make_get_request,
-        redis_client
+        redis_client,
+        event_loop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -116,6 +124,7 @@ async def test_genres_list_cache_exists_not_blank_es_index_not_blank(
         es_client,
         make_get_request,
         redis_client,
+        event_loop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -153,6 +162,7 @@ async def test_genres_list_pagination(
         es_client,
         make_get_request,
         redis_client,
+        event_loop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ с пагинацией.

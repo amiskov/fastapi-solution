@@ -7,7 +7,7 @@
 import pytest
 
 from tests.functional.src.fakedata.persons import fake_es_persons_index
-from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session
+from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session, event_loop
 from tests.functional.src.persons.fixtures import setup, BASE_URL
 from tests.functional.src.utils import remove_index, create_index, clear_cache
 
@@ -17,7 +17,8 @@ async def test_persons_search_no_params(
         setup,
         es_client,
         make_get_request,
-        redis_client
+        redis_client,
+        event_loop,
 ) -> None:
     """
     Тест на вызов ручки /persons/ без параметров.
@@ -38,7 +39,8 @@ async def test_persons_search_unknown(
         setup,
         es_client,
         make_get_request,
-        redis_client
+        redis_client,
+        event_loop,
 ) -> None:
     """
     Тест на вызов ручки /persons/ без параметров.
@@ -63,7 +65,8 @@ async def test_persons_search_one(
         setup,
         es_client,
         make_get_request,
-        redis_client
+        redis_client,
+        event_loop,
 ) -> None:
     """
     Тест поиска конкретного человека по ручке /persons/search.
@@ -88,6 +91,7 @@ async def test_persons_search_many_cache(
         make_get_request,
         redis_client,
         session,
+        event_loop,
 ) -> None:
     """
     Тест поиска множества человек по ручке /persons/search.
@@ -103,10 +107,10 @@ async def test_persons_search_many_cache(
         assert len(response_body) == 4
         for item in response.body:
             assert item in [
-                {"id": "1", "name": "Vitaliy Rakitin"},
-                {"id": "5", "name": "Vitaliy Mcgee"},
-                {"id": "8", "name": "Vitalii Yoder"},
-                {"id": "10", "name": "Vitaliy Paul"},
+                {'id': '1', 'name': 'Vitaliy Rakitin'},
+                {'id': '5', 'name': 'Vitaliy Mcgee'},
+                {'id': '8', 'name': 'Vitalii Yoder'},
+                {'id': '10', 'name': 'Vitaliy Paul'},
             ]
 
     # ==== Fake 1 ====

@@ -1,3 +1,4 @@
+import asyncio
 from typing import Optional
 
 import aiohttp
@@ -7,6 +8,11 @@ from elasticsearch import AsyncElasticsearch
 
 from tests.functional.settings import settings
 from tests.functional.src.utils import HTTPResponse
+
+
+@pytest.fixture
+def event_loop(scope='session'):
+    yield asyncio.get_event_loop()
 
 
 @pytest.fixture(scope='session')
