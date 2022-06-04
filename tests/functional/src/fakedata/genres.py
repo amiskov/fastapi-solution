@@ -1,5 +1,5 @@
 from tests.functional.settings import settings
-from tests.functional.src.fakedata.base import fake_es_index, fake_cache_list_data, get_cache_key
+from tests.functional.src.fakedata.base import fake_es_index, fake_cache_list_data, get_cache_key_list, fake_cache_items
 from tests.functional.src.fakedata.utils import fake_cache
 
 fake_genres = [
@@ -50,7 +50,15 @@ async def fake_cache_genres_list_blank(
     """Наполнение кеша редис данными."""
     await fake_cache(
         redis_client=redis_client,
-        key=get_cache_key(data_key='Genre', page_size=page_size, page_number=page_number),
+        key=get_cache_key_list(data_key='Genre', page_size=page_size, page_number=page_number),
         value=[],
     )
 
+
+async def fake_cache_genres_items(redis_client) -> None:
+    """Наполнение кеша редис жанрами по id."""
+    await fake_cache_items(
+        redis_client=redis_client,
+        data=fake_genres,
+        data_key='Genre',
+    )

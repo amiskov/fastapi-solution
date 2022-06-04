@@ -89,7 +89,7 @@ async def clear_cache(redis_client) -> None:
     """
     for keys in await redis_client.scan():
         print(f"Keys in cache: {keys}")
-        if keys:
+        if isinstance(keys, list):
             for key in keys:
                 print(f"Remove key: {keys}")
                 await redis_client.delete(key)

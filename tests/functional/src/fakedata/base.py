@@ -1,12 +1,19 @@
 from tests.functional.src.fakedata.utils import fake_es, generate_es_bulk_data, fake_cache
 
 
-def get_cache_key(
+def get_cache_key_list(
         data_key: str,
         page_size: int = 50,
         page_number: int = 1,
 ) -> str:
     return f'{data_key}:get_list:sort=-id:page_size={page_size}:page_number={page_number}'
+
+
+def get_cache_key_id(
+        data_key: str,
+        item_id: str,
+) -> str:
+    return f'{data_key}:get_by_id:{item_id}'
 
 
 async def fake_es_index(
@@ -41,7 +48,24 @@ async def fake_cache_list_data(
     result_data = data[offset:offset+limit]
     await fake_cache(
         redis_client=redis_client,
-        key=get_cache_key(data_key=data_key, page_size=page_size, page_number=page_number),
+        key=get_cache_key_list(data_key=data_key, page_size=page_size, page_number=page_number),
         value=result_data,
     )
     return result_data
+
+
+async def fake_cache_items(
+        redis_client,
+        data: list[dict],
+        data_key: str,
+) -> None:
+    """Наполнение кеша редис данными сущностями по id."""
+    for item in data:
+        _id = item.get('id')
+        if _id:
+            print(f"cache: {get_cache_key_id(data_key=data_key, item_id=_id)}")
+            await fake_cache(
+                redis_client=redis_client,
+                key=get_cache_key_id(data_key=data_key, item_id=_id),
+                value=item,
+            )
