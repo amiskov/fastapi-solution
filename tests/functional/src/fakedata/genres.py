@@ -1,19 +1,21 @@
+"""Фейковые данные для ручек /api/v1/genres."""
+
 from tests.functional.settings import settings
-from tests.functional.src.fakedata.base import fake_es_index, fake_cache_list_data, get_cache_key_list, fake_cache_items
+from tests.functional.src.fakedata.base import fake_cache_items, fake_cache_list_data, fake_es_index, get_cache_key_list
 from tests.functional.src.fakedata.utils import fake_cache
 
 fake_genres = [
-    {"id": "1", "name": "horror", "description": "scary movie"},
-    {"id": "2", "name": "thriller", "description": "scary films"},
-    {"id": "3", "name": "comedy", "description": None},
-    {"id": "4", "name": "action", "description": None},
-    {"id": "5", "name": "biopic", "description": None},
-    {"id": "6", "name": "doc", "description": None},
-    {"id": "7", "name": "scary genre", "description": None},
-    {"id": "8", "name": "mystery", "description": None},
-    {"id": "9", "name": "drama", "description": None},
-    {"id": "10", "name": "romantic", "description": None},
-    {"id": "11", "name": "fantasy", "description": None},
+    {'id': '1', 'name': 'horror', 'description': 'scary movie'},
+    {'id': '2', 'name': 'thriller', 'description': 'scary films'},
+    {'id': '3', 'name': 'comedy', 'description': None},
+    {'id': '4', 'name': 'action', 'description': None},
+    {'id': '5', 'name': 'biopic', 'description': None},
+    {'id': '6', 'name': 'doc', 'description': None},
+    {'id': '7', 'name': 'scary genre', 'description': None},
+    {'id': '8', 'name': 'mystery', 'description': None},
+    {'id': '9', 'name': 'drama', 'description': None},
+    {'id': '10', 'name': 'romantic', 'description': None},
+    {'id': '11', 'name': 'fantasy', 'description': None},
 ]
 
 

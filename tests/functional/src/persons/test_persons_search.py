@@ -3,22 +3,28 @@
 Используемая ручка: API v1 /api/v1/persons/search?query='текст'.
 """
 
+from asyncio.unix_events import _UnixSelectorEventLoop
+from typing import Callable
 
 import pytest
+from aiohttp import ClientSession
+from aioredis import Redis
+from elasticsearch import AsyncElasticsearch
 
 from tests.functional.src.fakedata.persons import fake_es_persons_index
-from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session, event_loop
-from tests.functional.src.persons.fixtures import setup, BASE_URL
-from tests.functional.src.utils import remove_index, create_index, clear_cache
+from tests.functional.src.fixtures import es_client, event_loop, make_get_request, redis_client, session
+from tests.functional.src.persons.fixtures import BASE_URL, setup
+from tests.functional.src.utils import clear_cache, create_index, remove_index
 
 
 @pytest.mark.asyncio
 async def test_persons_search_no_params(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /persons/ без параметров.
@@ -36,11 +42,12 @@ async def test_persons_search_no_params(
 
 @pytest.mark.asyncio
 async def test_persons_search_unknown(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /persons/ без параметров.
@@ -62,11 +69,12 @@ async def test_persons_search_unknown(
 
 @pytest.mark.asyncio
 async def test_persons_search_one(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест поиска конкретного человека по ручке /persons/search.
@@ -86,12 +94,12 @@ async def test_persons_search_one(
 
 @pytest.mark.asyncio
 async def test_persons_search_many_cache(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        session,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест поиска множества человек по ручке /persons/search.
@@ -103,7 +111,7 @@ async def test_persons_search_many_cache(
     2. Запрос данных с кешом (в базе 1 подходящий человек);
     3. Запрос данных после удаление кеша (в базе 1 подходящий человек);
     """
-    def _check_body(response_body):
+    def _check_body(response_body: list) -> None:
         assert len(response_body) == 4
         for item in response.body:
             assert item in [

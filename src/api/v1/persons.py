@@ -6,8 +6,7 @@ from fastapi import APIRouter, Depends, Query
 from errors import MissedQueryParameterException, PersonNotFoundException
 from models.person import PersonAPIResponse
 from services.person import PersonsService, get_persons_service
-
-from src.models.film import map_film_response, FilmAPIResponse
+from src.models.film import FilmAPIResponse, map_film_response
 from src.services.film import FilmService, get_film_service
 
 router = APIRouter()
@@ -71,7 +70,7 @@ async def person_details(
 
 
 @router.get('/{person_id}/film', response_model=list[FilmAPIResponse])
-async def person_details(
+async def films_by_person_id(
         person_id: str,
         page_size: int = Query(50, alias='page[size]', ge=1),
         page_number: int = Query(1, alias='page[number]', ge=1),
@@ -98,6 +97,7 @@ async def person_details(
     films = await film_service.get_search_result(
         query=person.name,
         page_size=page_size,
-        page_number=page_number
+        page_number=page_number,
+        fields=['actors_names', 'writers_names', 'director'],
     )
     return [map_film_response(film) for film in films]

@@ -1,6 +1,8 @@
 """Утилиты для тестов."""
 from dataclasses import dataclass
 
+from aiohttp import ClientSession
+from aioredis import Redis
 from multidict import CIMultiDictProxy
 
 from tests.functional.settings import settings
@@ -9,12 +11,14 @@ from tests.functional.src.errors import ESCreateIndexError, ESRemoveIndexError, 
 
 @dataclass
 class HTTPResponse:
+    """Описание ответа от сервиса."""
+
     body: dict
     headers: CIMultiDictProxy[str]
     status: int
 
 
-async def _create_index(session, data: str, index: str) -> None:
+async def _create_index(session: ClientSession, data: str, index: str) -> None:
     """
     Создание индекса в ElasticSearch.
 
@@ -27,7 +31,7 @@ async def _create_index(session, data: str, index: str) -> None:
         None.
     """
     headers = {
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
     }
     async with session.put(f'{settings.es_host}/{index}', data=data, headers=headers) as response:
         if response.status != 200:
@@ -38,7 +42,7 @@ async def _create_index(session, data: str, index: str) -> None:
             raise ESCreateIndexError
 
 
-async def remove_index(session, index: str) -> None:
+async def remove_index(session: ClientSession, index: str) -> None:
     """
     Удаление индекса в ElasticSearch.
 
@@ -50,11 +54,11 @@ async def remove_index(session, index: str) -> None:
         None.
     """
     async with session.delete(f'{settings.es_host}/{index}') as response:
-        if response.status != 200:
+        if response.status not in (200, 404):
             raise ESRemoveIndexError
 
 
-async def create_index(session, index: str, filename: str) -> None:
+async def create_index(session: ClientSession, index: str, filename: str) -> None:
     """
     Создание индекса в ElasticSearch.
 
@@ -77,7 +81,7 @@ async def create_index(session, index: str, filename: str) -> None:
             await _create_index(session=session, data=data, index=index)
 
 
-async def clear_cache(redis_client) -> None:
+async def clear_cache(redis_client: Redis) -> None:
     """
     Очистка кеша.
 
@@ -88,8 +92,6 @@ async def clear_cache(redis_client) -> None:
         None.
     """
     for keys in await redis_client.scan():
-        print(f"Keys in cache: {keys}")
         if isinstance(keys, list):
             for key in keys:
-                print(f"Remove key: {keys}")
                 await redis_client.delete(key)

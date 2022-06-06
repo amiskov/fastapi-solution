@@ -6,11 +6,10 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
+from core.config import settings
 from db.elastic import get_elastic
 from db.redis import cache_details, cache_list, get_redis
 from models.film import Film
-
-from core.config import settings
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
@@ -91,12 +90,13 @@ class FilmService:
             query: str,
             page_size: int,
             page_number: int,
+            fields: list[str],
     ) -> list[Film]:
         """Возвращает список фильмов, соответствующий критериям поиска."""
         search_query = {
             'multi_match': {
                 'query': query,
-                'fields': ['title^3', 'description'],
+                'fields': fields or ['title^3', 'description'],
                 'operator': 'and',
                 'fuzziness': 'AUTO',
             },

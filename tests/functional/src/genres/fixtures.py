@@ -2,6 +2,8 @@
 Общая фикстура дл тестов на ручку /api/v1/persons/.
 """
 import pytest
+from aiohttp import ClientSession
+from aioredis import Redis
 
 from tests.functional.settings import settings
 from tests.functional.src.utils import clear_cache, create_index, remove_index
@@ -11,7 +13,7 @@ INDEX = 'genres'
 
 
 @pytest.fixture
-async def setup(session, redis_client) -> None:
+async def setup(session: ClientSession, redis_client: Redis) -> None:
     """
     Насройка теста.
 

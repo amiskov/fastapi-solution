@@ -6,11 +6,10 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
+from core.config import settings
 from db.elastic import get_elastic
 from db.redis import cache_details, cache_list, get_redis
 from models.genre import Genre
-
-from core.config import settings
 
 GENRE_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 

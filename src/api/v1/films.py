@@ -23,7 +23,7 @@ async def films_search(
     search_result = await film_service.get_search_result(
         query=query,
         page_size=page_size,
-        page_number=page_number
+        page_number=page_number,
     )
     return [map_film_response(f) for f in search_result]
 

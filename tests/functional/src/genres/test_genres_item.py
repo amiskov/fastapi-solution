@@ -2,23 +2,28 @@
 
 Используемая ручка: API v1 /api/v1/genres/:id.
 """
-import pytest
 
-from tests.functional.src.fakedata.genres import (
-    fake_es_genres_index,
-    fake_cache_genres_items,
-)
-from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session, event_loop
-from tests.functional.src.genres.fixtures import setup, BASE_URL
+from asyncio.unix_events import _UnixSelectorEventLoop
+from typing import Callable
+
+import pytest
+from aiohttp import ClientSession
+from aioredis import Redis
+from elasticsearch import AsyncElasticsearch
+
+from tests.functional.src.fakedata.genres import fake_cache_genres_items, fake_es_genres_index
+from tests.functional.src.fixtures import es_client, event_loop, make_get_request, redis_client, session
+from tests.functional.src.genres.fixtures import BASE_URL, setup
 
 
 @pytest.mark.asyncio
 async def test_genres_item_by_id_blank(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /genres/:id/ без параметров.
@@ -36,11 +41,12 @@ async def test_genres_item_by_id_blank(
 
 @pytest.mark.asyncio
 async def test_genres_item_by_id_cache_exists(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /genres/:id/ без параметров.
@@ -60,11 +66,12 @@ async def test_genres_item_by_id_cache_exists(
 
 @pytest.mark.asyncio
 async def test_genres_item_by_id_cache_not_exists(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /genres/:id/ без параметров.

@@ -1,7 +1,10 @@
+"""Конфигурации для тестов."""
 from pydantic import BaseSettings, Field
 
 
 class TestSettings(BaseSettings):
+    """Конфигурации для тестов."""
+
     service_url: str = Field('http://127.0.0.1:8002', env='SERVICE_URL')
     PERSONS_ES_INDEX: str = Field('persons', env='PERSONS_ES_INDEX')
     GENRES_ES_INDEX: str = Field('genres', env='GENRES_ES_INDEX')

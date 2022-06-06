@@ -2,24 +2,32 @@
 
 Используемая ручка: API v1 /api/v1/genres/.
 """
+
+from asyncio.unix_events import _UnixSelectorEventLoop
+from typing import Callable
+
 import pytest
+from aiohttp import ClientSession
+from aioredis import Redis
+from elasticsearch import AsyncElasticsearch
 
 from tests.functional.src.fakedata.genres import (
     fake_cache_genres_list_blank,
     fake_cache_genres_list_data,
     fake_es_genres_index,
 )
-from tests.functional.src.fixtures import es_client, make_get_request, redis_client, session, event_loop
-from tests.functional.src.genres.fixtures import setup, BASE_URL
+from tests.functional.src.fixtures import es_client, event_loop, make_get_request, redis_client, session
+from tests.functional.src.genres.fixtures import BASE_URL, setup
 
 
 @pytest.mark.asyncio
 async def test_genres_list_cache_not_exists_es_index_blank(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -38,11 +46,12 @@ async def test_genres_list_cache_not_exists_es_index_blank(
 
 @pytest.mark.asyncio
 async def test_genres_list_cache_exists_es_index_blank(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -78,11 +87,12 @@ async def test_genres_list_cache_exists_es_index_blank(
 
 @pytest.mark.asyncio
 async def test_genres_list_cache_blank_index_not_blank(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -120,11 +130,12 @@ async def test_genres_list_cache_blank_index_not_blank(
 
 @pytest.mark.asyncio
 async def test_genres_list_cache_exists_not_blank_es_index_not_blank(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ без параметров.
@@ -158,11 +169,12 @@ async def test_genres_list_cache_exists_not_blank_es_index_not_blank(
 
 @pytest.mark.asyncio
 async def test_genres_list_pagination(
-        setup,
-        es_client,
-        make_get_request,
-        redis_client,
-        event_loop,
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
 ) -> None:
     """
     Тест на вызов ручки /genres/ с пагинацией.
