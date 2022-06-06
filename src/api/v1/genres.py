@@ -10,7 +10,37 @@ from services.genre import GenresService, get_genres_service
 router = APIRouter()
 
 
-@router.get('/search', response_model=list[GenreAPIResponse])
+@router.get(
+    '/',
+    response_model=list[GenreAPIResponse],
+    summary="Список жанров.",
+    description="Полный список всех персон.",
+    response_description="Список всех персон.",
+    tags=['Список жанров'],
+)
+async def genres_list(
+        genre_service: GenresService = Depends(get_genres_service),
+        sort: Optional[str] = '-id',
+        page_size: int = Query(50, alias='page[size]', ge=1),
+        page_number: int = Query(1, alias='page[number]', ge=1),
+) -> list[GenreAPIResponse]:
+    """Возвращает список жанров для отправки по API, соответствующий критериям фильтрации."""
+    genres = await genre_service.get_list(
+        sort=sort,
+        page_size=page_size,
+        page_number=page_number,
+    )
+    return [GenreAPIResponse(**item.dict()) for item in genres]
+
+
+@router.get(
+    '/search',
+    response_model=list[GenreAPIResponse],
+    summary="Поиск по жанрам.",
+    description="Полнотекстовый поиск по жанрам.",
+    response_description="Список всех жанров.",
+    tags=['Поиск по жанрам'],
+)
 async def genres_search(
         genre_service: GenresService = Depends(get_genres_service),
         query: str = None,
@@ -30,23 +60,14 @@ async def genres_search(
     return [GenreAPIResponse(**item.dict()) for item in search_result]
 
 
-@router.get('/', response_model=list[GenreAPIResponse])
-async def genres_list(
-        genre_service: GenresService = Depends(get_genres_service),
-        sort: Optional[str] = '-id',
-        page_size: int = Query(50, alias='page[size]', ge=1),
-        page_number: int = Query(1, alias='page[number]', ge=1),
-) -> list[GenreAPIResponse]:
-    """Возвращает список жанров для отправки по API, соответствующий критериям фильтрации."""
-    genres = await genre_service.get_list(
-        sort=sort,
-        page_size=page_size,
-        page_number=page_number,
-    )
-    return [GenreAPIResponse(**item.dict()) for item in genres]
-
-
-@router.get('/{genre_id}', response_model=GenreAPIResponse)
+@router.get(
+    '/{genre_id}',
+    response_model=GenreAPIResponse,
+    summary="Детализация жанра.",
+    description="Детализация жанра по id.",
+    response_description="Подробная информация о жанре (наименование и описание).",
+    tags=['Детализация жанра'],
+)
 async def genre_details(
         genre_id: str,
         genre_service: GenresService = Depends(get_genres_service),

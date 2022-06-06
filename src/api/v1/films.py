@@ -10,25 +10,14 @@ from services.film import FilmService, get_film_service
 router = APIRouter()
 
 
-@router.get('/search', response_model=list[FilmAPIResponse])
-async def films_search(
-        film_service: FilmService = Depends(get_film_service),
-        query: str = None,
-        page_size: int = Query(50, alias='page[size]', ge=1),
-        page_number: int = Query(1, alias='page[number]', ge=1),
-) -> list[FilmAPIResponse]:
-    """Возвращает список фильмов для отправки по API, соответствующий критериям поиска."""
-    if not query:
-        raise MissedQueryParameterException(parameter='query')
-    search_result = await film_service.get_search_result(
-        query=query,
-        page_size=page_size,
-        page_number=page_number,
-    )
-    return [map_film_response(f) for f in search_result]
-
-
-@router.get('/', response_model=list[FilmAPIResponse])
+@router.get(
+    '/',
+    response_model=list[FilmAPIResponse],
+    summary="Список всех кинопроизведений.",
+    description="Полный список всех кинопроизведениям.",
+    response_description="Список всех кинопроизведений.",
+    tags=['Список фильмов'],
+)
 async def films_list(
         film_service: FilmService = Depends(get_film_service),
         sort: Optional[str] = '-imdb_rating',
@@ -46,7 +35,39 @@ async def films_list(
     return [map_film_response(film) for film in films]
 
 
-@router.get('/{film_id}', response_model=FilmAPIResponse)
+@router.get(
+    '/search',
+    response_model=list[FilmAPIResponse],
+    summary="Поиск кинопроизведений.",
+    description="Полнотекстовый поиск по кинопроизведениям.",
+    response_description="Список подходящих кинопроизведений.",
+    tags=['Полнотекстовый поиск'],
+)
+async def films_search(
+        film_service: FilmService = Depends(get_film_service),
+        query: str = None,
+        page_size: int = Query(50, alias='page[size]', ge=1),
+        page_number: int = Query(1, alias='page[number]', ge=1),
+) -> list[FilmAPIResponse]:
+    """Возвращает список фильмов для отправки по API, соответствующий критериям поиска."""
+    if not query:
+        raise MissedQueryParameterException(parameter='query')
+    search_result = await film_service.get_search_result(
+        query=query,
+        page_size=page_size,
+        page_number=page_number,
+    )
+    return [map_film_response(f) for f in search_result]
+
+
+@router.get(
+    '/{film_id}',
+    response_model=FilmAPIResponse,
+    summary="Получение фильма по id.",
+    description="Получение полной информации о фильме по id.",
+    response_description="Детализация фильма..",
+    tags=['Получение фильма по id'],
+)
 async def film_details(
         film_id: str,
         film_service: FilmService = Depends(get_film_service),
