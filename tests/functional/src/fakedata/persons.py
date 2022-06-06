@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from tests.functional.settings import settings
 from tests.functional.src.fakedata.base import fake_es_index, fake_cache_list_data, get_cache_key_list, fake_cache_items
 from tests.functional.src.fakedata.utils import fake_cache
@@ -16,6 +18,48 @@ fake_persons = [
     {"id": "11", "name": "Oliver Valencia"},
 ]
 
+fake_movies = [
+    {
+        'id': '11',
+        'title': 'Фильм 1',
+        'description': None,
+        'imdb_rating': 0.5,
+        'creation_date': str(datetime.now()),
+        'genre': [],
+        'director': '',
+        'actors_names': '',
+        'writers_names': '',
+        'actors': [{"id": "2", "name": "Keira Liu"}],
+        'writers': [{"id": "1", "name": "Vitaliy Rakitin"}],
+    },
+    {
+        'id': '12',
+        'title': 'Фильм 2',
+        'description': None,
+        'imdb_rating': 0.6,
+        'creation_date': str(datetime.now()),
+        'genre': [],
+        'director': '',
+        'actors_names': '',
+        'writers_names': '',
+        'actors': [{"id": "1", "name": "Vitaliy Rakitin"}],
+        'writers': [{"id": "11", "name": "Oliver Valencia"}],
+    },
+    {
+        'id': '13',
+        'title': 'Фильм 2',
+        'description': None,
+        'imdb_rating': 0.7,
+        'creation_date': str(datetime.now()),
+        'genre': [],
+        'director': '',
+        'actors_names': '',
+        'writers_names': '',
+        'actors': [{"id": "10", "name": "Vitaliy Paul"}],
+        'writers': [{"id": "11", "name": "Oliver Valencia"}],
+    }
+]
+
 
 async def fake_es_persons_index(
         es_client,
@@ -23,6 +67,14 @@ async def fake_es_persons_index(
 ) -> list[dict]:
     """Наполнение данными индекс persons."""
     return await fake_es_index(es_client, index=settings.PERSONS_ES_INDEX, data=fake_persons, limit=limit)
+
+
+async def fake_es_films_index(
+        es_client,
+        limit: int = 50,
+) -> list[dict]:
+    """Наполнение данными индекс persons."""
+    return await fake_es_index(es_client, index=settings.MOVIES_INDEX, data=fake_movies, limit=limit)
 
 
 async def fake_cache_persons_list_data(
@@ -62,3 +114,12 @@ async def fake_cache_persons_items(redis_client) -> None:
         data=fake_persons,
         data_key='Person',
     )
+
+
+# async def fake_cache_persons_films(redis_client) -> None:
+#     """Наполнение кеша редис персоналиями по id."""
+#     await fake_cache_items(
+#         redis_client=redis_client,
+#         data=fake_persons,
+#         data_key='Films',
+#     )
