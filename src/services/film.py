@@ -6,19 +6,15 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
-from db.cache.redis import RedisCache, get_redis
+from db.cache.redis import get_redis
 from db.data_providers.elastic import get_elastic
 from db.data_providers.films import FilmsDataProvider
-from models.film import Film
 from services.base_service import BaseService
-
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 
 @dataclass
 class FilmService(BaseService):
     db: FilmsDataProvider
-    cache: RedisCache
 
 
 @lru_cache()
@@ -38,9 +34,4 @@ def get_film_service(
     """
     return FilmService(
         db=FilmsDataProvider(es_client=elastic, es_index='movies'),
-        cache=RedisCache(
-            redis_client=redis,
-            model_class=Film,
-            ttl=FILM_CACHE_EXPIRE_IN_SECONDS
-        )
     )

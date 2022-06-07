@@ -6,7 +6,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
-from db.cache.redis import RedisCache, get_redis
+from db.cache.redis_cache import RedisCache, get_redis
 from db.data_providers.elastic import get_elastic
 from db.data_providers.persons import PersonsDataProvider
 from models.person import Person
