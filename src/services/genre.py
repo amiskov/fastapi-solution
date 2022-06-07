@@ -17,6 +17,8 @@ GENRE_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 @dataclass
 class GenresService(BaseService):
+    """Сервис загрузки жанров."""
+
     db: GenresDataProvider
     cache: RedisCache
 
@@ -41,6 +43,6 @@ def get_genres_service(
         cache=RedisCache(
             redis_client=redis,
             model_class=Genre,
-            ttl=GENRE_CACHE_EXPIRE_IN_SECONDS
-        )
+            ttl=GENRE_CACHE_EXPIRE_IN_SECONDS,
+        ),
     )

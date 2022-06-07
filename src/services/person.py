@@ -17,6 +17,8 @@ PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 @dataclass
 class PersonsService(BaseService):
+    """Serves the Person model."""
+
     db: PersonsDataProvider
     cache: RedisCache
 
@@ -41,6 +43,6 @@ def get_persons_service(
         cache=RedisCache(
             redis_client=redis,
             model_class=Person,
-            ttl=PERSON_CACHE_EXPIRE_IN_SECONDS
-        )
+            ttl=PERSON_CACHE_EXPIRE_IN_SECONDS,
+        ),
     )

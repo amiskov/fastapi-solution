@@ -16,6 +16,8 @@ async def get_elastic() -> AsyncElasticsearch:
 
 @dataclass
 class ElasticDataProvider(BaseDataProvider):
+    """Provides the data from Elastic for models."""
+
     es_client: AsyncElasticsearch
     es_index: str
 
@@ -28,16 +30,15 @@ class ElasticDataProvider(BaseDataProvider):
         return doc['_source']
 
     async def get_list(self, **kwargs) -> list[dict]:
-        """Возвращает список сущностей без фильтрации с параметрами,
-        заданными в `kwargs`."""
+        """Возвращает список сущностей без фильтрации с параметрами."""
         return await self._get_list_from_elastic(
             query={'match_all': {}},
             **kwargs,
         )
 
     async def get_search_result(self, **kwargs) -> list:
-        """Поиск "по умолчанию": вернёт результат поиска по всем полям."""
-        return await self._search_elastic(fields=["*"], **kwargs)
+        """Поиск 'по умолчанию': вернёт результат поиска по всем полям."""
+        return await self._search_elastic(fields=['*'], **kwargs)
 
     async def _get_list_from_elastic(
             self,

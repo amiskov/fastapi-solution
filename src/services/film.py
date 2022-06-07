@@ -17,6 +17,8 @@ FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
 @dataclass
 class FilmService(BaseService):
+    """Serves the Film model."""
+
     db: FilmsDataProvider
     cache: RedisCache
 
@@ -41,6 +43,6 @@ def get_film_service(
         cache=RedisCache(
             redis_client=redis,
             model_class=Film,
-            ttl=FILM_CACHE_EXPIRE_IN_SECONDS
-        )
+            ttl=FILM_CACHE_EXPIRE_IN_SECONDS,
+        ),
     )

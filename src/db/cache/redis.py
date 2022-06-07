@@ -1,6 +1,6 @@
 """Caching API queries."""
 from dataclasses import dataclass
-from typing import Callable, Optional, Type
+from typing import Callable, Optional, Type, Union
 
 import orjson
 from aioredis import Redis
@@ -21,56 +21,38 @@ async def get_redis() -> Redis:
 
 @dataclass
 class RedisCache(BaseCache):
+    """Caches queries with Redis."""
+
     redis_client: Redis
     model_class: Type[BaseModel]
     ttl: int = DEFAULT_TIME_TO_LIVE
 
-    async def get_entity_from_cache_or_db(
+    async def get_from_cache_or_db(
             self,
-            get_entity_from_db_fn: Callable,
-            entity_id: str
-    ) -> Optional[BaseModel]:
-        """
-        Get the entity from cache (e.g. Film details).
-        If it's not in cache, then use `get_entity_from_db_fn` function
-        and `entity_id` to get the entity from the original data source.
-        """
-        key = self._get_caching_key(
-            get_entity_from_db_fn.__name__,
-            entity_id=entity_id,
-        )
+            get_from_db: Callable,
+            **kwargs,
+    ) -> Union[Optional[BaseModel], list[BaseModel]]:
+        """Retrieve the data from the data source for further caching."""
+        key = self._get_caching_key(get_from_db, **kwargs)
         cached_data = await self.redis_client.get(key)
         if cached_data:
             data = cached_data
         else:
-            data_raw = await get_entity_from_db_fn(entity_id)
+            data_raw = await get_from_db(**kwargs)
             data = orjson.dumps(data_raw, default=pydantic_encoder)
             await self.redis_client.set(key, data, expire=self.ttl)
-        return self.model_class.parse_raw(data)
 
-    async def get_list_from_cache_or_db(
-            self,
-            get_list_from_db_fn: Callable,
-            **kwargs
-    ) -> list[BaseModel]:
-        """
-        Get list of entities from cache (e.g. list of Films).
-        If they're not cached, then get them from the original data source
-        with `get_list_from_db_fn` and `**kwargs`.
-        """
-        key = self._get_caching_key(get_list_from_db_fn.__name__, **kwargs)
-        cached_data = await self.redis_client.get(key)
-        if cached_data:
-            data = cached_data
+        d = orjson.loads(data)
+        if isinstance(d, dict):
+            return self.model_class(**d)
+        elif isinstance(d, list):
+            return [self.model_class(**entity) for entity in d]
         else:
-            data_raw = await get_list_from_db_fn(**kwargs)
-            data = orjson.dumps(data_raw, default=pydantic_encoder)
-            await self.redis_client.set(key, data, expire=self.ttl)
-        return [self.model_class(**entity) for entity in orjson.loads(data)]
+            return None
 
-    def _get_caching_key(self, fn_name: str, **kwargs) -> str:
+    @staticmethod
+    def _get_caching_key(fn: Callable, **kwargs) -> str:
         """Return a caching key based on model, method, and its parameters."""
-        model_name = self.model_class.__name__
         params = [f'{k}={v}' for k, v in kwargs.items() if v is not None]
-        caching_key_parts = [model_name, fn_name] + params
+        caching_key_parts = [fn.__qualname__] + params
         return '/'.join(caching_key_parts)

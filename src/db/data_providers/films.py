@@ -1,7 +1,10 @@
+"""Provides the data for the Film models."""
 from db.data_providers.elastic import ElasticDataProvider
 
 
 class FilmsDataProvider(ElasticDataProvider):
+    """Provides the data from Elastic for the Film models."""
+
     async def get_list(self, genre_id: str, **kwargs) -> list[dict]:
         """Возвращает список фильмов с опциональной фильтрацией по ID жанра."""
         if genre_id:
