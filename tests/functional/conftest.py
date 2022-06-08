@@ -1,12 +1,10 @@
-from pprint import pprint
+from dataclasses import dataclass
+from typing import Optional
 
 import aiohttp
 import pytest
-
-from typing import Optional
-from dataclasses import dataclass
-from multidict import CIMultiDictProxy
 from elasticsearch import AsyncElasticsearch
+from multidict import CIMultiDictProxy
 
 SERVICE_URL = 'http://127.0.0.1:8000'
 
@@ -51,25 +49,3 @@ def make_get_request(session):
             )
 
     return inner
-
-
-@pytest.mark.asyncio
-async def test_search_detailed(es_client, make_get_request):
-    # Заполнение данных для теста
-    # await es_client.bulk(...)
-
-    # Выполнение запроса
-    response = await make_get_request(
-        '/films/search',
-        {
-            'query': 'Star Wars',
-            'page[size]': 1,
-         }
-    )
-    pprint(response)
-
-    # Проверка результата
-    assert response.status == 200
-    assert len(response.body) == 1
-    # вернётся список найденных фильмов, expected
-    # assert response.body == expected
