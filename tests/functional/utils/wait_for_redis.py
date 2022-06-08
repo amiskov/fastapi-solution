@@ -1,14 +1,8 @@
 import asyncio
 import logging
-import os
-import sys
 
 import aioredis
-from functional.settings import settings
-
-# Tweak `PYTHONPATH`
-tests_path = os.path.join(os.path.dirname(__file__), "..", "..")
-sys.path.append(tests_path)
+from tests.functional.settings import settings
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("TestRedis")

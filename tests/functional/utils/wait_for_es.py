@@ -1,16 +1,10 @@
 import asyncio
 import logging
-import os
-import sys
 
 import aiohttp
-from functional.settings import settings
+from tests.functional.settings import settings
 
-# Tweak `PYTHONPATH`
-tests_path = os.path.join(os.path.dirname(__file__), "..", "..")
-sys.path.append(tests_path)
-
-ES_URL = settings.es_host + "3"
+ES_URL = settings.es_host
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("TestElastic")

@@ -23,7 +23,6 @@ async def test_search_detailed(es_client, make_get_request):
             'page[size]': 1,
         }
     )
-    pprint(response)
 
     # Проверка результата
     assert response.status == 200
