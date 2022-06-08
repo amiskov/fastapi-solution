@@ -5,8 +5,10 @@ import aiohttp
 import pytest
 from elasticsearch import AsyncElasticsearch
 from multidict import CIMultiDictProxy
+from functional.settings import settings
 
-SERVICE_URL = 'http://127.0.0.1:8000'
+SERVICE_URL = settings.service_url
+ES_URL = settings.es_host
 
 
 @dataclass
@@ -21,7 +23,7 @@ class HTTPResponse:
 @pytest.fixture(scope='session')
 async def es_client():
     """Creates an ES client before and tears it down after the test."""
-    client = AsyncElasticsearch(hosts='127.0.0.1:9200')
+    client = AsyncElasticsearch(hosts=ES_URL)
     # Everything before `yield` will be executed before tests,
     yield client
     # and everything after the `yield` will be executed after the tests.
@@ -40,7 +42,7 @@ def make_get_request(session):
     async def inner(method: str,
                     params: Optional[dict] = None) -> HTTPResponse:
         params = params or {}
-        url = SERVICE_URL + '/api/v1' + method  # в боевых системах старайтесь так не делать!
+        url = SERVICE_URL + '/api/v1' + method
         async with session.get(url, params=params) as response:
             return HTTPResponse(
                 body=await response.json(),

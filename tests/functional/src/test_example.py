@@ -1,13 +1,7 @@
-from dataclasses import dataclass
-from pprint import pprint
-from typing import Optional
-
-import aiohttp
 import pytest
-from elasticsearch import AsyncElasticsearch
-from multidict import CIMultiDictProxy
+from functional.settings import settings
 
-SERVICE_URL = 'http://127.0.0.1:8000'
+SERVICE_URL = settings.service_url
 
 
 @pytest.mark.asyncio

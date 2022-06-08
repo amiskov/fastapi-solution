@@ -9,11 +9,8 @@ from functional.settings import settings
 films_url = settings.service_url + '/api/v1/films'
 film_id = 'e4f1672d-329d-4167-86e0-28f459aff68f'
 
-schemas_dir = Path(__file__) \
-    .parent \
-    .parent \
-    .joinpath('testdata/schemas') \
-    .absolute()
+schemas_dir = Path(__file__).parent.parent. \
+    joinpath('testdata/schemas').absolute()
 
 
 def validate_payload(payload: str, schema_name: str) -> None:
