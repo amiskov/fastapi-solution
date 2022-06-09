@@ -4,7 +4,8 @@ from pathlib import Path
 import requests
 from jsonschema import validate
 from jsonschema.validators import RefResolver
-from functional.settings import settings
+
+from tests.functional.settings import settings
 
 films_url = settings.service_url + '/api/v1/films'
 film_id = 'e4f1672d-329d-4167-86e0-28f459aff68f'

@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import aioredis
+
 from tests.functional.settings import settings
 
 logging.basicConfig(level=logging.INFO)

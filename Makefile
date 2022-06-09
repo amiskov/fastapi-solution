@@ -8,14 +8,15 @@ down:
 	docker compose down -v
 test:
 	export SERVICE_URL='http://127.0.0.1:8000';\
-	export PERSONS_ES_INDEX='persons_test';\
-	export GENRES_ES_INDEX='genres_test';\
-	export MOVIES_INDEX='movies_test';\
+	export PERSONS_ES_INDEX='persons';\
+	export GENRES_ES_INDEX='genres';\
+	export MOVIES_INDEX='movies';\
 	export REDIS_HOST='127.0.0.1';\
 	export REDIS_PORT='6379';\
 	export REDIS_URL='http://127.0.0.1:6379';\
 	export ELASTIC_HOST='http://127.0.0.1:9200';\
-	pytest tests/functional/src -s
+	export PYTHONPATH='./tests';\
+	pytest tests/functional/src/genres/test_genres_search.py -s
 pinges:
 	export PYTHONPATH='.';\
 	python tests/functional/utils/wait_for_es.py

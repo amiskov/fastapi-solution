@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 import aiohttp
+
 from tests.functional.settings import settings
 
 ES_URL = settings.es_host

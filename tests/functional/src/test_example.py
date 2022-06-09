@@ -1,5 +1,7 @@
 import pytest
-from functional.settings import settings
+
+# from functional.settings import settings
+from tests.functional.settings import settings
 
 SERVICE_URL = settings.service_url
 

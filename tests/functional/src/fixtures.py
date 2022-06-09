@@ -1,11 +1,11 @@
 """Фикстуры для тестов."""
 import asyncio
 from asyncio.unix_events import _UnixSelectorEventLoop
-from typing import Optional, Any
+from typing import Any, Optional
 
 import aiohttp
 import pytest
-from aioredis import create_redis_pool, Redis
+from aioredis import Redis, create_redis_pool
 from elasticsearch import AsyncElasticsearch
 
 from tests.functional.settings import settings
@@ -36,6 +36,8 @@ async def redis_client() -> Redis:
         (settings.REDIS_HOST, settings.REDIS_PORT), minsize=10, maxsize=20,
     )
     yield client
+    client.close()
+    await client.wait_closed()
 
 
 @pytest.fixture(scope='session')
