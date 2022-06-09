@@ -11,7 +11,8 @@ from aiohttp import ClientSession
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fakedata.persons import fake_es_persons_index
-from persons.fixtures import BASE_URL
+from persons.fixtures import BASE_URL, setup
+from fixtures import es_client, event_loop, make_get_request, redis_client, session
 from settings import settings
 from utils import clear_cache, create_index, remove_index
 

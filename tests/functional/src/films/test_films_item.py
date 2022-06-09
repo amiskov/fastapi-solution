@@ -1,0 +1,92 @@
+"""Тесты для API получения жанров по id.
+
+Используемая ручка: API v1 /api/v1/films/:id.
+"""
+
+from asyncio.unix_events import _UnixSelectorEventLoop
+from typing import Callable
+
+import pytest
+from aiohttp import ClientSession
+from aioredis import Redis
+from elasticsearch import AsyncElasticsearch
+from fakedata.films import fake_cache_films_items, fake_es_films_index
+from fixtures import es_client, event_loop, make_get_request, redis_client, session
+from films.fixtures import BASE_URL, setup
+
+
+@pytest.mark.asyncio
+async def test_films_item_by_id_blank(
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
+) -> None:
+    """
+    Тест на вызов ручки /films/:id/ без параметров.
+
+    Уусловии: запрос отсутствует в кеше, Elastic Search index пустой.
+
+    ОП: 404.
+    """
+    # ==== Run ====
+    response = await make_get_request(base_url=BASE_URL, method='/2a090dde-f688-46fe-a9f4-b781a985275e/')
+
+    # ==== Asserts ====
+    assert response.status == 404
+
+
+@pytest.mark.asyncio
+async def test_films_item_by_id_cache_exists(
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
+) -> None:
+    """
+    Тест на вызов ручки /films/:id/ без параметров.
+
+    Условие: запрос присутствует в кеше.
+    """
+    # ==== Fake ====
+    await fake_cache_films_items(redis_client)
+
+    # ==== Run ====
+    response = await make_get_request(base_url=BASE_URL, method='/2a090dde-f688-46fe-a9f4-b781a985275e/')
+
+    # ==== Asserts ====
+    assert response.status == 200
+    assert response.body['title'] == 'Star Wars: Knights of the Old Republic'
+    assert response.body['id'] == '2a090dde-f688-46fe-a9f4-b781a985275e'
+
+
+@pytest.mark.asyncio
+async def test_films_item_by_id_cache_not_exists(
+        setup: None,
+        session: ClientSession,
+        es_client: AsyncElasticsearch,
+        make_get_request: Callable,
+        redis_client: Redis,
+        event_loop: _UnixSelectorEventLoop,
+) -> None:
+    """
+    Тест на вызов ручки /films/:id/ без параметров.
+
+    Условие: запрос присутствует в кеше.
+    """
+    # ==== Fake ====
+    await fake_es_films_index(es_client=es_client)
+
+    # ==== Run ====
+    response_1 = await make_get_request(base_url=BASE_URL, method='/2a090dde-f688-46fe-a9f4-b781a985275e')
+    response_2 = await make_get_request(base_url=BASE_URL, method='/404')
+
+    # ==== Asserts ====
+    assert response_1.status == 200
+    assert response_1.body['id'] == '2a090dde-f688-46fe-a9f4-b781a985275e'
+    assert response_1.body['title'] == 'Star Wars: Knights of the Old Republic'
+    assert response_2.status == 404
