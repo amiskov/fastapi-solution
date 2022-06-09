@@ -1,5 +1,5 @@
 # Асинхронный API для кинотеатра
-[Команда №17](https://yandex-students.slack.com/archives/C03833GPQGH/p1652369332840549), @amiskov и @vitaliyrakitin.
+[Команда №16](https://yandex-students.slack.com/archives/C03833GPQGH/p1652369332840549) (раньше была 17), @amiskov и @vitaliyrakitin.
 
 ## Документация Open API
 См. URI `/api/openapi`.
@@ -27,7 +27,7 @@ docker-compose up --build
 [^**]: Образ `ghcr.io/vitaliyrakitin/cinema-etl:latest` залит в github registry. Сам код можно посмотреть в [репозитории](https://github.com/VitaliyRakitin/new_admin_panel_sprint_3/tree/main/01_etl).
 
 ## Тесты
-В проекте настроены фцавтотесты.
+В проекте настроены автотесты.
 
 Для запуска достаточно выполнить следующий код:
 ```bash
