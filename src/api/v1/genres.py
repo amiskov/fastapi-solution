@@ -16,7 +16,7 @@ router = APIRouter()
     summary="Список жанров.",
     description="Полный список всех персон.",
     response_description="Список всех персон.",
-    tags=['Список жанров'],
+    tags=['Список всех элементов'],
 )
 async def genres_list(
         genre_service: GenresService = Depends(get_genres_service),
@@ -39,7 +39,7 @@ async def genres_list(
     summary="Поиск по жанрам.",
     description="Полнотекстовый поиск по жанрам.",
     response_description="Список всех жанров.",
-    tags=['Поиск по жанрам'],
+    tags=['Полнотекстовый поиск'],
 )
 async def genres_search(
         genre_service: GenresService = Depends(get_genres_service),
@@ -66,7 +66,7 @@ async def genres_search(
     summary="Детализация жанра.",
     description="Детализация жанра по id.",
     response_description="Подробная информация о жанре (наименование и описание).",
-    tags=['Детализация жанра'],
+    tags=['Получение даннх по id'],
 )
 async def genre_details(
         genre_id: str,

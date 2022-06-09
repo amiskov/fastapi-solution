@@ -18,7 +18,7 @@ router = APIRouter()
     summary="Список персон.",
     description="Полный список всех персон.",
     response_description="Список всех персон.",
-    tags=['Список персон'],
+    tags=['Список всех элементов'],
 )
 async def persons_list(
         person_service: PersonsService = Depends(get_persons_service),
@@ -41,7 +41,7 @@ async def persons_list(
     summary="Поиск по персоналиям.",
     description="Полнотекстовый поиск по персоналиям.",
     response_description="Список персон.",
-    tags=['Поиск по персонам'],
+    tags=['Полнотекстовый поиск'],
 )
 async def persons_search(
         person_service: PersonsService = Depends(get_persons_service),
@@ -67,7 +67,7 @@ async def persons_search(
     summary="Детализация персоны.",
     description="Детализация персоны по id..",
     response_description="Подробная информация о персоне (полное имя).",
-    tags=['Детализация персоны'],
+    tags=['Получение даннх по id'],
 )
 async def person_details(
         person_id: str,

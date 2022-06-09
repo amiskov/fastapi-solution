@@ -16,7 +16,7 @@ router = APIRouter()
     summary="Список всех кинопроизведений.",
     description="Полный список всех кинопроизведениям.",
     response_description="Список всех кинопроизведений.",
-    tags=['Список фильмов'],
+    tags=['Список всех элементов'],
 )
 async def films_list(
         film_service: FilmService = Depends(get_film_service),
@@ -66,7 +66,7 @@ async def films_search(
     summary="Получение фильма по id.",
     description="Получение полной информации о фильме по id.",
     response_description="Детализация фильма..",
-    tags=['Получение фильма по id'],
+    tags=['Получение даннх по id'],
 )
 async def film_details(
         film_id: str,
