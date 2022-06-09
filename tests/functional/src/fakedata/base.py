@@ -17,7 +17,7 @@ def get_cache_key_id(
         item_id: str,
 ) -> str:
     """Формирования ключа для кеша элемента."""
-    return f'{data_key}:get_by_id:{item_id}'
+    return f'{data_key}:get_by_id:entity_id={item_id}'
 
 
 async def fake_es_index(

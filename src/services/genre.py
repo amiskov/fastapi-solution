@@ -6,6 +6,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
+from core.config import settings
 from db.cache.redis import RedisCache, get_redis
 from db.data_providers.elastic import get_elastic
 from db.data_providers.genres import GenresDataProvider
@@ -39,7 +40,10 @@ def get_genres_service(
         GenresService:
     """
     return GenresService(
-        db=GenresDataProvider(es_client=elastic, es_index='genres'),
+        db=GenresDataProvider(
+            es_client=elastic,
+            es_index=settings.GENRES_ES_INDEX,
+        ),
         cache=RedisCache(
             redis_client=redis,
             model_class=Genre,
