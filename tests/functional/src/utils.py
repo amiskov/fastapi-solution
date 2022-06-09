@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from aiohttp import ClientSession
 from aioredis import Redis
 from multidict import CIMultiDictProxy
+from settings import settings
 
-from tests.functional.settings import settings
-from tests.functional.src.errors import ESCreateIndexError, ESRemoveIndexError, ESResourceAlreadyExistsError
+from errors import ESCreateIndexError, ESRemoveIndexError, ESResourceAlreadyExistsError
 
 
 @dataclass
@@ -33,7 +33,7 @@ async def _create_index(session: ClientSession, data: str, index: str) -> None:
     headers = {
         'Content-Type': 'application/json',
     }
-    async with session.put(f'{settings.es_host}/{index}', data=data, headers=headers) as response:
+    async with session.put(f'{settings.ELASTIC_URL}/{index}', data=data, headers=headers) as response:
         if response.status != 200:
             data = await response.json()
             error_type = data.get('error', {}).get('type')
@@ -53,7 +53,7 @@ async def remove_index(session: ClientSession, index: str) -> None:
     Returns:
         None.
     """
-    async with session.delete(f'{settings.es_host}/{index}') as response:
+    async with session.delete(f'{settings.ELASTIC_URL}/{index}') as response:
         if response.status not in (200, 404):
             raise ESRemoveIndexError
 

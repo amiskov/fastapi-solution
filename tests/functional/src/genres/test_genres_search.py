@@ -10,11 +10,11 @@ import pytest
 from aiohttp import ClientSession
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-
-from tests.functional.src.fakedata.genres import fake_es_genres_index
-from tests.functional.src.fixtures import es_client, event_loop, make_get_request, redis_client, session
-from tests.functional.src.genres.fixtures import BASE_URL, setup
-from tests.functional.src.utils import clear_cache, create_index, remove_index
+from fakedata.genres import fake_es_genres_index
+from fixtures import es_client, event_loop, make_get_request, redis_client, session
+from genres.fixtures import BASE_URL, setup
+from settings import settings
+from utils import clear_cache, create_index, remove_index
 
 
 @pytest.mark.asyncio
@@ -132,7 +132,7 @@ async def test_genres_search_many_cache(
 
     # ==== Fake 2 ====
     await remove_index(session=session, index='genres')
-    await create_index(session=session, filename='../static/create_genres_index.json', index='genres')
+    await create_index(session=session, filename=settings.STATIC_ES_GENRES_INDEX_PATH, index='genres')
     await fake_es_genres_index(es_client=es_client, limit=1)
 
     # ==== Run 2 ====

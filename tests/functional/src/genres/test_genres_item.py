@@ -10,10 +10,9 @@ import pytest
 from aiohttp import ClientSession
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-
-from tests.functional.src.fakedata.genres import fake_cache_genres_items, fake_es_genres_index
-from tests.functional.src.fixtures import es_client, event_loop, make_get_request, redis_client, session
-from tests.functional.src.genres.fixtures import BASE_URL, setup
+from fakedata.genres import fake_cache_genres_items, fake_es_genres_index
+from fixtures import es_client, event_loop, make_get_request, redis_client, session
+from genres.fixtures import BASE_URL, setup
 
 
 @pytest.mark.asyncio

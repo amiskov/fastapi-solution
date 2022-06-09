@@ -1,8 +1,8 @@
 """Фейковые данные для ручек /api/v1/genres."""
 
-from tests.functional.settings import settings
-from tests.functional.src.fakedata.base import fake_cache_items, fake_cache_list_data, fake_es_index, get_cache_key_list
-from tests.functional.src.fakedata.utils import fake_cache
+from fakedata.base import fake_cache_items, fake_cache_list_data, fake_es_index, get_cache_key_list
+from fakedata.utils import fake_cache
+from settings import settings
 
 fake_genres = [
     {'id': '1', 'name': 'horror', 'description': 'scary movie'},

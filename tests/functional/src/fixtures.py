@@ -1,15 +1,14 @@
 """Фикстуры для тестов."""
 import asyncio
 from asyncio.unix_events import _UnixSelectorEventLoop
-from typing import Optional, Any
+from typing import Any, Optional
 
 import aiohttp
 import pytest
-from aioredis import create_redis_pool, Redis
+from aioredis import Redis, create_redis_pool
 from elasticsearch import AsyncElasticsearch
-
-from tests.functional.settings import settings
-from tests.functional.src.utils import HTTPResponse
+from settings import settings
+from utils import HTTPResponse
 
 
 @pytest.fixture
@@ -24,7 +23,7 @@ def event_loop(scope='session') -> _UnixSelectorEventLoop:
 @pytest.fixture(scope='session')
 async def es_client() -> AsyncElasticsearch:
     """Определение Elastic Search клиента."""
-    client = AsyncElasticsearch(hosts=settings.es_host)
+    client = AsyncElasticsearch(hosts=[settings.ELASTIC_URL])
     yield client
     await client.close()
 

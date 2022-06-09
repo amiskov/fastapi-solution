@@ -2,9 +2,9 @@
 
 from datetime import datetime
 
-from tests.functional.settings import settings
-from tests.functional.src.fakedata.base import fake_cache_items, fake_cache_list_data, fake_es_index, get_cache_key_list
-from tests.functional.src.fakedata.utils import fake_cache
+from fakedata.base import fake_cache_items, fake_cache_list_data, fake_es_index, get_cache_key_list
+from fakedata.utils import fake_cache
+from settings import settings
 
 fake_persons = [
     {'id': '1', 'name': 'Vitaliy Rakitin'},

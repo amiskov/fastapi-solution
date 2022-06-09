@@ -27,6 +27,13 @@ docker-compose up --build
 \** Образ (ghcr.io/vitaliyrakitin/cinema-etl:latest) залит в github registry. 
 Сам код можно посмотреть в [репозитории](https://github.com/VitaliyRakitin/new_admin_panel_sprint_3/tree/main/01_etl).
 
+## Тесты
+В проекте настроены фцавтотесты.
+
+Для запуска достаточно выполнить следующий код:
+```bash
+bash functional_tests.sh
+```
 
 ## Я хочу контрибьютить!
 

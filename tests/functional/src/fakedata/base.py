@@ -1,6 +1,6 @@
 """Общие методы для генерации фейковых данных."""
 
-from tests.functional.src.fakedata.utils import fake_cache, fake_es, generate_es_bulk_data
+from fakedata.utils import fake_cache, fake_es, generate_es_bulk_data
 
 
 def get_cache_key_list(
