@@ -35,6 +35,8 @@ async def redis_client() -> Redis:
         (settings.REDIS_HOST, settings.REDIS_PORT), minsize=10, maxsize=20,
     )
     yield client
+    client.close()
+    await client.wait_closed()
 
 
 @pytest.fixture(scope='session')

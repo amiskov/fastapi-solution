@@ -9,4 +9,5 @@ RUN pip install --upgrade pip && pip install -U setuptools pip && pip install --
 
 COPY ./src/ /app
 USER appuser
-CMD ["pytest"]
+
+CMD ["bash", "/app/run.sh"]
