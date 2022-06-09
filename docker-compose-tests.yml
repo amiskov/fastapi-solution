@@ -20,20 +20,13 @@ services:
     restart: always
     environment:
       discovery.type: single-node
-#    ports:
-#      - 9200:9200
 
   cache:
     image: redis:6.2-alpine
     restart: always
     volumes:
       - cache:/data
-#    ports:
-#      - 6379:6379
 
 
 volumes:
   cache: {}
-  static: {}
-  db: {}
-  locale: {}
