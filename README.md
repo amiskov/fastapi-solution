@@ -15,7 +15,7 @@ docker-compose up --build
 При этом запускаются контейнеры в следующем порядке:
 
 1. DB PostgreSQL (`db`);
-2. [^*]Django App с админкой для онлайн-кинотеатра из спринта 2 (`app`);
+2. [^*] Django App с админкой для онлайн-кинотеатра из спринта 2 (`app`);
 3. Nginx (`nginx`);
 4. Elastic Search (`elasticsearch`);
 5. [^**] ETL-процесс по выгрузке данных из PostgreSQL в Elastic Search из спринта 3 (`etl`);
@@ -24,7 +24,13 @@ docker-compose up --build
 
 [^*]: Образ `ghcr.io/vitaliyrakitin/cinema-django-app:latest` залит в github registry. Сам код можно посмотреть в [репозитории](https://github.com/VitaliyRakitin/new_admin_panel_sprint_2/tree/main/01_docker_compose/app).
 
-[^**]: Образ `ghcr.io/vitaliyrakitin/cinema-etl:latest` залит в github registry. Сам код можно посмотреть в [репозитории](https://github.com/VitaliyRakitin/new_admin_panel_sprint_3/tree/main/01_etl).
+## Тесты
+В проекте настроены фцавтотесты.
+
+Для запуска достаточно выполнить следующий код:
+```bash
+bash functional_tests.sh
+```
 
 ## Я хочу контрибьютить!
 

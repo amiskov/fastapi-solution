@@ -6,6 +6,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
+from core.config import settings
 from db.cache.redis import RedisCache, get_redis
 from db.data_providers.elastic import get_elastic
 from db.data_providers.films import FilmsDataProvider
@@ -39,7 +40,10 @@ def get_film_service(
         FilmService:
     """
     return FilmService(
-        db=FilmsDataProvider(es_client=elastic, es_index='movies'),
+        db=FilmsDataProvider(
+            es_client=elastic,
+            es_index=settings.MOVIES_ES_INDEX,
+        ),
         cache=RedisCache(
             redis_client=redis,
             model_class=Film,

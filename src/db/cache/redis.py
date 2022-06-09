@@ -50,9 +50,9 @@ class RedisCache(BaseCache):
         else:
             return None
 
-    @staticmethod
-    def _get_caching_key(fn: Callable, **kwargs) -> str:
+    def _get_caching_key(self, fn: Callable, **kwargs) -> str:
         """Return a caching key based on model, method, and its parameters."""
         params = [f'{k}={v}' for k, v in kwargs.items() if v is not None]
-        caching_key_parts = [fn.__qualname__] + params
-        return '/'.join(caching_key_parts)
+        caching_key_parts = [self.model_class.__name__, fn.__name__] + params
+        print(':'.join(caching_key_parts))
+        return ':'.join(caching_key_parts)

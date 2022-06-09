@@ -33,7 +33,6 @@ class FilmsDataProvider(ElasticDataProvider):
 
     async def get_search_result(self, **kwargs) -> list[dict]:
         """Возвращает список фильмов, соответствующий критериям поиска."""
-        return await self._search_elastic(
-            fields=['title^3', 'description'],
-            **kwargs,
-        )
+        if not kwargs['fields']:
+            kwargs['fields'] = ['title^3', 'description']
+        return await self._search_elastic(**kwargs)

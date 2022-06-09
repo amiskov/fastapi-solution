@@ -72,6 +72,8 @@ services:
       - app
     healthcheck:
       test: "exit 0"
+    ports:
+      - 9200:9200
 
   etl:
     container_name: etl
@@ -92,6 +94,8 @@ services:
       - cache:/data
     healthcheck:
       test: "exit 0"
+    ports:
+      - 6379:6379
 
 
 volumes:

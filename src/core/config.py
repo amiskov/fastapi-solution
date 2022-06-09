@@ -20,6 +20,10 @@ class Settings(BaseSettings):
     ELASTIC_HOST: str = os.getenv('ELASTIC_HOST', '127.0.0.1')
     ELASTIC_PORT: int = int(os.getenv('ELASTIC_PORT', 9200))
 
+    MOVIES_ES_INDEX: str = os.getenv('MOVIES_ES_INDEX', 'movies')
+    PERSONS_ES_INDEX: str = os.getenv('PERSONS_ES_INDEX', 'persons')
+    GENRES_ES_INDEX: str = os.getenv('GENRES_ES_INDEX', 'genres')
+
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
     class Config:
