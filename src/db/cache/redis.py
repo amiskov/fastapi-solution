@@ -54,5 +54,4 @@ class RedisCache(BaseCache):
         """Return a caching key based on model, method, and its parameters."""
         params = [f'{k}={v}' for k, v in kwargs.items() if v is not None]
         caching_key_parts = [self.model_class.__name__, fn.__name__] + params
-        print(':'.join(caching_key_parts))
         return ':'.join(caching_key_parts)
