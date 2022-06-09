@@ -76,7 +76,7 @@ async def fake_es_films_index(
 
 async def fake_cache_films_list_data(
         redis_client,
-        page_size: int = 5,
+        page_size: int = 50,
         page_number: int = 1,
         limit: int = 5,
 ) -> list[dict]:
@@ -88,19 +88,24 @@ async def fake_cache_films_list_data(
         page_size=page_size,
         page_number=page_number,
         limit=limit,
+        sort='-imdb_rating',
     )
 
 
 async def fake_cache_films_list_blank(
         redis_client,
-        page_size: int = 5,
+        page_size: int = 50,
         page_number: int = 1,
 ) -> None:
     """Наполнение кеша редис данными."""
     await fake_cache(
         redis_client=redis_client,
         key=get_cache_key_list(
-            data_key='Film', page_size=page_size, page_number=page_number),
+            data_key='Film',
+            page_size=page_size,
+            page_number=page_number,
+            sort='-imdb_rating',
+        ),
         value=[],
     )
 
