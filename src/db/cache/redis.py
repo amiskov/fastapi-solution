@@ -34,14 +34,11 @@ class RedisCache(BaseCache):
     ) -> Union[Optional[BaseModel], list[BaseModel]]:
         """Retrieve the data from the data source for further caching."""
         key = self._get_caching_key(get_from_db, **kwargs)
+        cached_data = await self.redis_client.get(key)
         if cached_data:
             data = cached_data
-            if data is None:
-                return None
         else:
             data_raw = await get_from_db(**kwargs)
-            if data_raw is None:
-                return None
             data = orjson.dumps(data_raw, default=pydantic_encoder)
             await self.redis_client.set(key, data, expire=self.ttl)
 
@@ -53,9 +50,9 @@ class RedisCache(BaseCache):
         else:
             return None
 
-    @staticmethod
-    def _get_caching_key(fn: Callable, **kwargs) -> str:
+    def _get_caching_key(self, fn: Callable, **kwargs) -> str:
         """Return a caching key based on model, method, and its parameters."""
         params = [f'{k}={v}' for k, v in kwargs.items() if v is not None]
-        caching_key_parts = [fn.__qualname__] + params
-        return '/'.join(caching_key_parts)
+        caching_key_parts = [self.model_class.__name__, fn.__name__] + params
+        print(':'.join(caching_key_parts))
+        return ':'.join(caching_key_parts)
