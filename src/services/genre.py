@@ -6,6 +6,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
+from core.config import settings
 from db.elastic import get_elastic
 from db.redis import cache_details, cache_list, get_redis
 from models.genre import Genre
@@ -37,7 +38,7 @@ class GenresService:
 
         try:
             doc = await self.elastic.search(
-                index='genres',
+                index=settings.GENRES_ES_INDEX,
                 body={
                     'sort': {sort_term: {'order': order}},
                     'size': page_size,
@@ -63,7 +64,7 @@ class GenresService:
             Genre (optional):
         """
         try:
-            doc = await self.elastic.get('genres', genre_id)
+            doc = await self.elastic.get(settings.GENRES_ES_INDEX, genre_id)
         except NotFoundError:
             return None
         return Genre(**doc['_source'])
@@ -86,7 +87,7 @@ class GenresService:
         }
         try:
             doc = await self.elastic.search(
-                index='genres',
+                index=settings.GENRES_ES_INDEX,
                 body={
                     'size': page_size,
                     'from': (page_number - 1) * page_size,

@@ -6,6 +6,7 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch, NotFoundError
 from fastapi import Depends
 
+from core.config import settings
 from db.elastic import get_elastic
 from db.redis import cache_details, cache_list, get_redis
 from models.person import Person
@@ -36,15 +37,18 @@ class PersonsService:
         query = {'match_all': {}}
 
         try:
+            body = {
+                'sort': {sort_term: {'order': order}},
+                'size': page_size,
+                'from': (page_number - 1) * page_size,
+                'query': query,
+            }
+
             doc = await self.elastic.search(
-                index='persons',
-                body={
-                    'sort': {sort_term: {'order': order}},
-                    'size': page_size,
-                    'from': (page_number - 1) * page_size,
-                    'query': query,
-                },
+                index=settings.PERSONS_ES_INDEX,
+                body=body,
             )
+
         except NotFoundError:
             return []
 
@@ -63,7 +67,7 @@ class PersonsService:
             Person (optional):
         """
         try:
-            doc = await self.elastic.get('persons', person_id)
+            doc = await self.elastic.get(settings.PERSONS_ES_INDEX, person_id)
         except NotFoundError:
             return None
         return Person(**doc['_source'])
@@ -86,7 +90,7 @@ class PersonsService:
         }
         try:
             doc = await self.elastic.search(
-                index='persons',
+                index=settings.PERSONS_ES_INDEX,
                 body={
                     'size': page_size,
                     'from': (page_number - 1) * page_size,

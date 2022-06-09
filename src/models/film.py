@@ -17,9 +17,9 @@ class Film(BaseModel, ConfigOverrideMixin):
     description: Optional[str] = Field(title='Описание фильма')
     creation_date: Optional[date] = Field(title='Дата создания фильма')
     imdb_rating: float = Field(title='Рейтинг IMDB')
-    director: list[str] = Field(title='Режиссёры')
-    actors: list[Actor] = Field(title='Актёры')
-    writers: list[Writer] = Field(title='Сценаристы')
+    director: list[str] = Field(title='Режиссёры', default_factory=list)
+    actors: list[Actor] = Field(title='Актёры', default_factory=list)
+    writers: list[Writer] = Field(title='Сценаристы', default_factory=list)
     genre: list[Genre] = Field(title='Жанры', default_factory=list)
     file_path: Optional[str] = Field(title='Ссылка на файл')
 
@@ -42,12 +42,14 @@ def map_film_response(f: Film) -> FilmAPIResponse:
     """
     Возвращает модель фильма для выдачи по API.
     """
-    return FilmAPIResponse(id=f.id,
-                           title=f.title,
-                           imdb_rating=f.imdb_rating,
-                           description=f.description,
-                           creation_date=f.creation_date,
-                           actors=f.actors,
-                           directors=f.director,
-                           writers=f.writers,
-                           genre=f.genre)
+    return FilmAPIResponse(
+        id=f.id,
+        title=f.title,
+        imdb_rating=f.imdb_rating,
+        description=f.description,
+        creation_date=f.creation_date,
+        actors=f.actors,
+        directors=f.director,
+        writers=f.writers,
+        genre=f.genre,
+    )
