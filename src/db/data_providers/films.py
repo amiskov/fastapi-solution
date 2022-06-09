@@ -1,4 +1,6 @@
 """Provides the data for the Film models."""
+from pprint import pprint
+
 from db.data_providers.elastic import ElasticDataProvider
 
 
@@ -33,6 +35,6 @@ class FilmsDataProvider(ElasticDataProvider):
 
     async def get_search_result(self, **kwargs) -> list[dict]:
         """Возвращает список фильмов, соответствующий критериям поиска."""
-        if not kwargs['fields']:
+        if 'fields' not in kwargs:
             kwargs['fields'] = ['title^3', 'description']
         return await self._search_elastic(**kwargs)
