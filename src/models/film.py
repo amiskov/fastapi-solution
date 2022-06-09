@@ -34,7 +34,7 @@ class FilmAPIResponse(BaseModel, ConfigOverrideMixin):
     creation_date: Optional[date]
     actors: list
     writers: list
-    directors: list[str]
+    director: list[str]
     genre: list[Genre]
 
 
@@ -49,7 +49,7 @@ def map_film_response(f: Film) -> FilmAPIResponse:
         description=f.description,
         creation_date=f.creation_date,
         actors=f.actors,
-        directors=f.director,
+        director=f.director,
         writers=f.writers,
         genre=f.genre,
     )

@@ -1,4 +1,5 @@
 """Общие методы для генерации фейковых данных."""
+from typing import Optional
 
 from fakedata.utils import fake_cache, fake_es, generate_es_bulk_data
 
@@ -7,9 +8,10 @@ def get_cache_key_list(
         data_key: str,
         page_size: int = 50,
         page_number: int = 1,
+        sort: str = '-id'
 ) -> str:
     """Формирования ключа для кеша списка."""
-    return f'{data_key}:get_list:sort=-id:page_size={page_size}:page_number={page_number}'
+    return f'{data_key}:get_list:sort={sort}:page_size={page_size}:page_number={page_number}'
 
 
 def get_cache_key_id(
@@ -46,13 +48,14 @@ async def fake_cache_list_data(
         page_size: int = 50,
         page_number: int = 1,
         limit: int = 50,
+        sort: Optional[str] = '-id'
 ) -> list[dict]:
     """Наполнение кеша редис данными."""
     offset = page_size * (page_number - 1)
     result_data = data[offset:offset + limit]
     await fake_cache(
         redis_client=redis_client,
-        key=get_cache_key_list(data_key=data_key, page_size=page_size, page_number=page_number),
+        key=get_cache_key_list(data_key=data_key, page_size=page_size, page_number=page_number, sort=sort),
         value=result_data,
     )
     return result_data
