@@ -12,7 +12,37 @@ from services.film import FilmService, get_film_service
 router = APIRouter()
 
 
-@router.get('/search', response_model=list[PersonAPIResponse])
+@router.get(
+    '/',
+    response_model=list[PersonAPIResponse],
+    summary="Список персон.",
+    description="Полный список всех персон.",
+    response_description="Список всех персон.",
+    tags=['Список всех элементов'],
+)
+async def persons_list(
+        person_service: PersonsService = Depends(get_persons_service),
+        sort: Optional[str] = '-id',
+        page_size: int = Query(50, alias='page[size]', ge=1),
+        page_number: int = Query(1, alias='page[number]', ge=1),
+) -> list[PersonAPIResponse]:
+    """Возвращает список персон для отправки по API, соответствующий критериям фильтрации."""
+    persons = await person_service.get_list(
+        sort=sort,
+        page_size=page_size,
+        page_number=page_number,
+    )
+    return [PersonAPIResponse(**item.dict()) for item in persons]
+
+
+@router.get(
+    '/search',
+    response_model=list[PersonAPIResponse],
+    summary="Поиск по персоналиям.",
+    description="Полнотекстовый поиск по персоналиям.",
+    response_description="Список персон.",
+    tags=['Полнотекстовый поиск'],
+)
 async def persons_search(
         person_service: PersonsService = Depends(get_persons_service),
         query: str = None,
@@ -31,23 +61,14 @@ async def persons_search(
     return [PersonAPIResponse(**item.dict()) for item in search_result]
 
 
-@router.get('/', response_model=list[PersonAPIResponse])
-async def persons_list(
-        person_service: PersonsService = Depends(get_persons_service),
-        sort: Optional[str] = '-id',
-        page_size: int = Query(50, alias='page[size]', ge=1),
-        page_number: int = Query(1, alias='page[number]', ge=1),
-) -> list[PersonAPIResponse]:
-    """Возвращает список персон для отправки по API, соответствующий критериям фильтрации."""
-    persons = await person_service.get_list(
-        sort=sort,
-        page_size=page_size,
-        page_number=page_number,
-    )
-    return [PersonAPIResponse(**item.dict()) for item in persons]
-
-
-@router.get('/{person_id}', response_model=PersonAPIResponse)
+@router.get(
+    '/{person_id}',
+    response_model=PersonAPIResponse,
+    summary="Детализация персоны.",
+    description="Детализация персоны по id..",
+    response_description="Подробная информация о персоне (полное имя).",
+    tags=['Получение даннх по id'],
+)
 async def person_details(
         person_id: str,
         person_service: PersonsService = Depends(get_persons_service),
@@ -69,7 +90,14 @@ async def person_details(
     return PersonAPIResponse(**person.dict())
 
 
-@router.get('/{person_id}/film', response_model=list[FilmAPIResponse])
+@router.get(
+    '/{person_id}/film',
+    response_model=list[FilmAPIResponse],
+    summary="Поиск фильма по персоне.",
+    description="Поиск всех фильмов, где участвовал конкретный человек (по id персоны).",
+    response_description="Список фильмов.",
+    tags=['Поиск фильма по персоне'],
+)
 async def films_by_person_id(
         person_id: str,
         page_size: int = Query(50, alias='page[size]', ge=1),

@@ -11,7 +11,9 @@ from db.cache import redis
 from db.data_providers import elastic
 
 app = FastAPI(
-    title=settings.PROJECT_NAME,
+    title="Read-only API для онлайн-кинотеатра",
+    description="Информация о фильмах, жанрах и людях, участвовавших в создании произведения",
+    version="1.0.0",
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
@@ -37,9 +39,9 @@ async def shutdown() -> None:
     await elastic.es.close()
 
 
-app.include_router(films.router, prefix='/api/v1/films', tags=['films'])
-app.include_router(genres.router, prefix='/api/v1/genres', tags=['genres'])
-app.include_router(persons.router, prefix='/api/v1/persons', tags=['persons'])
+app.include_router(films.router, prefix='/api/v1/films')
+app.include_router(genres.router, prefix='/api/v1/genres')
+app.include_router(persons.router, prefix='/api/v1/persons')
 
 if __name__ == '__main__':
     uvicorn.run(
