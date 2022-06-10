@@ -5,6 +5,18 @@ from typing import Callable, Optional, Union
 from pydantic import BaseModel
 
 
+class AsyncCacheStorage(ABC):
+    """Abstract Caching Storage."""
+
+    @abstractmethod
+    async def get(self, key: str, **kwargs):
+        pass
+
+    @abstractmethod
+    async def set(self, key: str, value: bytes, expire: int, **kwargs):
+        pass
+
+
 class BaseCache(ABC):
     """Base abstraction for a cache."""
 

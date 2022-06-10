@@ -1,6 +1,4 @@
 """Provides the data for the Film models."""
-from pprint import pprint
-
 from db.data_providers.elastic import ElasticDataProvider
 
 

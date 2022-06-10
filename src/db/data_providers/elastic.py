@@ -4,7 +4,7 @@ from typing import Optional
 
 from elasticsearch import AsyncElasticsearch, NotFoundError
 
-from db.data_providers.base import BaseDataProvider
+from db.data_providers.base import BaseDataProvider, AsyncDataProvider
 
 es: Optional[AsyncElasticsearch] = None
 
@@ -18,13 +18,13 @@ async def get_elastic() -> AsyncElasticsearch:
 class ElasticDataProvider(BaseDataProvider):
     """Provides the data from Elastic for models."""
 
-    es_client: AsyncElasticsearch
-    es_index: str
+    db_client: AsyncDataProvider
+    db_index: str
 
     async def get_by_id(self, entity_id: str) -> Optional[dict]:
         """Загрузка сущности по id."""
         try:
-            doc = await self.es_client.get(self.es_index, entity_id)
+            doc = await self.db_client.get(self.db_index, entity_id)
         except NotFoundError:
             return None
         return doc['_source']
@@ -58,7 +58,7 @@ class ElasticDataProvider(BaseDataProvider):
             sort_term = sort[1:] if is_desc_sorting else sort
             body['sort'] = {sort_term: {'order': order}}
         try:
-            doc = await self.es_client.search(index=self.es_index, body=body)
+            doc = await self.db_client.search(index=self.db_index, body=body)
         except NotFoundError:
             return []
         items = [hit['_source'] for hit in doc['hits']['hits']]
