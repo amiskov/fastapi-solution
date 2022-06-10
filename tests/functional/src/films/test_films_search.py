@@ -4,7 +4,6 @@
 """
 
 from asyncio.unix_events import _UnixSelectorEventLoop
-from pprint import pprint
 from typing import Callable
 
 import pytest

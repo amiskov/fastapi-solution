@@ -8,6 +8,7 @@ from fastapi import Depends
 from core.config import settings
 from db.cache.base import AsyncCacheStorage
 from db.cache.redis import Cache, get_redis
+from db.data_providers.base import AsyncDataProvider
 from db.data_providers.elastic import get_elastic
 from db.data_providers.films import FilmsDataProvider
 from models.film import Film
@@ -27,22 +28,22 @@ class FilmService(BaseService):
 @lru_cache()
 def get_film_service(
         cache: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        db: AsyncDataProvider = Depends(get_elastic),
 ) -> FilmService:
     """
     Сервис по загрузке кинопроизведений.
 
     Args:
         cache:
-        elastic:
+        db:
 
     Returns:
         FilmService:
     """
     return FilmService(
         db=FilmsDataProvider(
-            es_client=elastic,
-            es_index=settings.MOVIES_ES_INDEX,
+            db_client=db,
+            db_index=settings.MOVIES_ES_INDEX,
         ),
         cache=Cache(
             cache_client=cache,

@@ -8,6 +8,7 @@ from fastapi import Depends
 from core.config import settings
 from db.cache.base import AsyncCacheStorage
 from db.cache.redis import Cache, get_redis
+from db.data_providers.base import AsyncDataProvider
 from db.data_providers.elastic import get_elastic
 from db.data_providers.persons import PersonsDataProvider
 from models.person import Person
@@ -27,22 +28,22 @@ class PersonsService(BaseService):
 @lru_cache()
 def get_persons_service(
         cache: AsyncCacheStorage = Depends(get_redis),
-        elastic: AsyncElasticsearch = Depends(get_elastic),
+        db: AsyncDataProvider = Depends(get_elastic),
 ) -> PersonsService:
     """
     Сервис по загрузке персон.
 
     Args:
         cache:
-        elastic:
+        db:
 
     Returns:
         PersonsService:
     """
     return PersonsService(
         db=PersonsDataProvider(
-            es_client=elastic,
-            es_index=settings.PERSONS_ES_INDEX,
+            db_client=db,
+            db_index=settings.PERSONS_ES_INDEX,
         ),
         cache=Cache(
             cache_client=cache,

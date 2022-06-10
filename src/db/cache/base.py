@@ -6,6 +6,8 @@ from pydantic import BaseModel
 
 
 class AsyncCacheStorage(ABC):
+    """Abstract Caching Storage."""
+
     @abstractmethod
     async def get(self, key: str, **kwargs):
         pass
