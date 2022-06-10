@@ -3,6 +3,7 @@
 Используемая ручка: API v1 /api/v1/genres/search?query='текст'.
 """
 
+import http
 from asyncio.unix_events import _UnixSelectorEventLoop
 from typing import Callable
 
@@ -37,7 +38,7 @@ async def test_genres_search_no_params(
     response = await make_get_request(base_url=BASE_URL, method='/search')
 
     # ==== Asserts ====
-    assert response.status == 400
+    assert response.status == http.HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.asyncio
@@ -63,7 +64,7 @@ async def test_genres_search_unknown(
     response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'qwerty'})
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 0
 
 
@@ -86,7 +87,7 @@ async def test_genres_search_one(
     response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'Triller'})
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 1
     assert response.body[0].get('name') == 'thriller'
     assert response.body[0].get('id') == '2'
@@ -127,7 +128,7 @@ async def test_genres_search_many_cache(
     response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'scary'})
 
     # ==== Asserts 1 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     _check_body(response.body)
 
     # ==== Fake 2 ====
@@ -139,7 +140,7 @@ async def test_genres_search_many_cache(
     response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'scary'})
 
     # ==== Asserts 2 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     _check_body(response.body)
 
     # ==== Fake 3 ====
@@ -149,6 +150,6 @@ async def test_genres_search_many_cache(
     response = await make_get_request(base_url=BASE_URL, method='/search', params={'query': 'scary'})
 
     # ==== Asserts 3 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 1
     assert response.body[0] == {'id': '1', 'name': 'horror', 'description': 'scary movie'}

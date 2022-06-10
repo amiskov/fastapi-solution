@@ -2,7 +2,7 @@
 
 Используемая ручка: API v1 /api/v1/persons/.
 """
-
+import http
 from asyncio.unix_events import _UnixSelectorEventLoop
 from typing import Callable
 
@@ -35,7 +35,7 @@ async def test_persons_list_cache_not_exists_es_index_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 0
 
 
@@ -65,7 +65,7 @@ async def test_persons_list_cache_exists_es_index_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 0
 
     # ======== Not blank cache ========
@@ -76,7 +76,7 @@ async def test_persons_list_cache_exists_es_index_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert response.body == faked_persons_in_cache
 
 
@@ -106,7 +106,7 @@ async def test_persons_list_cache_blank_index_not_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(faked_persons_in_es_index) > 0
     assert len(response.body) == 0
 
@@ -118,7 +118,7 @@ async def test_persons_list_cache_blank_index_not_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert response.body == faked_persons_in_cache
     assert len(response.body) != len(faked_persons_in_es_index)
 
@@ -148,7 +148,7 @@ async def test_persons_list_cache_exists_not_blank_es_index_not_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts 1 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert response.body == faked_persons_in_es_index_1_sorted
 
     # ==== Fake 2 ===
@@ -157,7 +157,7 @@ async def test_persons_list_cache_exists_not_blank_es_index_not_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts 2 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) != len(faked_persons_in_es_index_2)
     assert response.body == faked_persons_in_es_index_1_sorted
 
@@ -189,7 +189,7 @@ async def test_persons_list_pagination(
     )
 
     # ==== Asserts 1 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 5
     for item in response.body:
         assert item in faked_persons_in_es_index_1
@@ -202,7 +202,7 @@ async def test_persons_list_pagination(
     )
 
     # ==== Asserts 2 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 2
     for item in response.body:
         assert item in faked_persons_in_es_index_1
@@ -215,5 +215,5 @@ async def test_persons_list_pagination(
     )
 
     # ==== Asserts 3 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 0

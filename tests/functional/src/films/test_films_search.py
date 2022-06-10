@@ -3,18 +3,17 @@
 Используемая ручка: API v1 /api/v1/films/search?query='текст'.
 """
 
+import http
 from asyncio.unix_events import _UnixSelectorEventLoop
-from pprint import pprint
 from typing import Callable
 
 import pytest
 from aiohttp import ClientSession
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-from fakedata.films import fake_es_films_index
-from fixtures import es_client, event_loop, make_get_request, redis_client, \
-    session
+from fakedata.films import fake_es_films_index, fake_films
 from films.fixtures import BASE_URL, setup
+from fixtures import es_client, event_loop, make_get_request, redis_client, session
 from settings import settings
 from utils import clear_cache, create_index, remove_index
 
@@ -39,7 +38,7 @@ async def test_films_search_no_params(
     response = await make_get_request(base_url=BASE_URL, method='/search')
 
     # ==== Asserts ====
-    assert response.status == 400
+    assert response.status == http.HTTPStatus.BAD_REQUEST
 
 
 @pytest.mark.asyncio
@@ -66,7 +65,7 @@ async def test_films_search_unknown(
                                       params={'query': 'qwerty'})
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 0
 
 
@@ -93,11 +92,10 @@ async def test_films_search_one(
     )
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 1
-    assert response.body[0].get(
-        'title') == 'Ringo Rocket Star and His Song for Yuri Gagarin'
-    assert response.body[0].get('id') == 'c49c1df9-6d06-47b7-87db-d96190901fa4'
+    assert response.body[0].get('title') == fake_films[3]['title']
+    assert response.body[0].get('id') == fake_films[3]['id']
 
 
 @pytest.mark.asyncio
@@ -116,29 +114,7 @@ async def test_films_search_many_cache(
     def _check_body(response_body: list) -> None:
         assert len(response_body) == 2
         for item in response.body:
-            assert item in [
-                {'id': '2a090dde-f688-46fe-a9f4-b781a985275e',
-                 'title': 'Star Wars: Knights of the Old Republic',
-                 'imdb_rating': 9.6,
-                 'description': '',
-                 'creation_date': None,
-                 'actors': [],
-                 'writers': [],
-                 'director': [],
-                 'genre': []
-                 },
-                {
-                    "id": "c241874f-53d3-411a-8894-37c19d8bf010",
-                    "title": "Star Wars SC 38 Reimagined",
-                    "imdb_rating": 9.5,
-                    "description": "",
-                    "creation_date": None,
-                    "actors": [],
-                    "writers": [],
-                    'director': [],
-                    "genre": []
-                },
-            ]
+            assert item in fake_films[0:2]
 
     # ==== Fake 1 ====
     await fake_es_films_index(es_client=es_client)
@@ -151,7 +127,7 @@ async def test_films_search_many_cache(
     )
 
     # ==== Asserts 1 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     _check_body(response.body)
 
     # ==== Fake 2 ====
@@ -169,7 +145,7 @@ async def test_films_search_many_cache(
     )
 
     # ==== Asserts 2 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     _check_body(response.body)
 
     # ==== Fake 3 ====
@@ -183,5 +159,5 @@ async def test_films_search_many_cache(
     )
 
     # ==== Asserts 3 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 1

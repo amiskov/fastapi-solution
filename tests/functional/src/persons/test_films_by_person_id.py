@@ -2,7 +2,7 @@
 
 Используемая ручка: API v1 /api/v1/persons/:id/film.
 """
-
+import http
 from asyncio.unix_events import _UnixSelectorEventLoop
 from typing import Callable
 
@@ -36,7 +36,7 @@ async def test_persons_films_blank(
     response = await make_get_request(base_url=BASE_URL, method='/1/film')
 
     # ==== Asserts ====
-    assert response.status == 404
+    assert response.status == http.HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.asyncio
@@ -57,7 +57,7 @@ async def test_persons_films_with_cache(
     ОП: в обоих случаях выдача из 4 фильмов (после 1 запроса фильмы закешировались).
     """
     def _asserts() -> None:
-        assert response.status == 200
+        assert response.status == http.HTTPStatus.OK
         assert len(response.body) == 5
         for item in response.body:
             assert item.get('id') in ['11', '12', '14', '15', '16']
