@@ -4,10 +4,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from errors import MissedQueryParameterException, PersonNotFoundException
-from models.person import PersonAPIResponse
-from services.person import PersonsService, get_persons_service
 from models.film import FilmAPIResponse, map_film_response
+from models.person import PersonAPIResponse
 from services.film import FilmService, get_film_service
+from services.person import PersonsService, get_persons_service
 
 router = APIRouter()
 

@@ -2,7 +2,7 @@
 
 Используемая ручка: API v1 /api/v1/persons/:id.
 """
-
+import http
 from asyncio.unix_events import _UnixSelectorEventLoop
 from typing import Callable
 
@@ -10,7 +10,7 @@ import pytest
 from aiohttp import ClientSession
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-from fakedata.persons import fake_cache_persons_items, fake_es_persons_index
+from fakedata.persons import fake_cache_persons_items, fake_es_persons_index, fake_persons
 from fixtures import es_client, event_loop, make_get_request, redis_client, session
 from persons.fixtures import BASE_URL, setup
 
@@ -32,10 +32,10 @@ async def test_persons_item_by_id_blank(
     ОП: 404.
     """
     # ==== Run ====
-    response = await make_get_request(base_url=BASE_URL, method='/1/')
+    response = await make_get_request(base_url=BASE_URL, method=f'/{fake_persons[0]["id"]}/')
 
     # ==== Asserts ====
-    assert response.status == 404
+    assert response.status == http.HTTPStatus.NOT_FOUND
 
 
 @pytest.mark.asyncio
@@ -56,11 +56,11 @@ async def test_persons_item_by_id_cache_exists(
     await fake_cache_persons_items(redis_client)
 
     # ==== Run ====
-    response = await make_get_request(base_url=BASE_URL, method='/1/')
+    response = await make_get_request(base_url=BASE_URL, method=f'/{fake_persons[0]["id"]}/')
 
     # ==== Asserts ====
-    assert response.status == 200
-    assert response.body == {'id': '1', 'name': 'Vitaliy Rakitin'}
+    assert response.status == http.HTTPStatus.OK
+    assert response.body == fake_persons[0]
 
 
 @pytest.mark.asyncio
@@ -81,10 +81,10 @@ async def test_persons_item_by_id_cache_not_exists(
     await fake_es_persons_index(es_client=es_client)
 
     # ==== Run ====
-    response_1 = await make_get_request(base_url=BASE_URL, method='/1/')
+    response_1 = await make_get_request(base_url=BASE_URL, method=f'/{fake_persons[0]["id"]}/')
     response_2 = await make_get_request(base_url=BASE_URL, method='/404/')
 
     # ==== Asserts ====
     assert response_1.status == 200
-    assert response_1.body == {'id': '1', 'name': 'Vitaliy Rakitin'}
+    assert response_1.body == fake_persons[0]
     assert response_2.status == 404

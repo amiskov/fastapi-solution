@@ -1,11 +1,8 @@
 import asyncio
-import logging
 import aiohttp
-
 from settings import settings
+from utils import logger, backoff
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("TestElastic")
 ES_URL = settings.ELASTIC_URL
 
 
@@ -14,21 +11,11 @@ if not ES_URL:
     exit(1)
 
 
+@backoff(service="ElasticSearch")
 async def ping_elastic(url: str, sleep_time: int = 1) -> None:
     async with aiohttp.ClientSession() as session:
-        while True:
-            try:
-                async with session.head(url):
-                    logger.info('Successfully connected to Elastic.')
-                    exit(0)  # everything is fine
-            except Exception as e:
-                logger.error(e)
-                msg = f'Error connecting ES. Trying again ' \
-                      f'in {sleep_time} seconds...',
-                logger.error(msg)
-                await asyncio.sleep(sleep_time)
-            else:
-                exit(1)  # something abnormal happened
+        async with session.head(url):
+            logger.info('Successfully connected to Elastic.')
 
 
 loop = asyncio.get_event_loop()

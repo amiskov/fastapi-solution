@@ -1,11 +1,11 @@
 """Фейковые данные для ручек /api/v1/films."""
 
-from fakedata.base import fake_cache_items, fake_cache_list_data, \
-    fake_es_index, get_cache_key_list
+import pathlib
+
+import orjson
+from fakedata.base import fake_cache_items, fake_cache_list_data, fake_es_index, get_cache_key_list
 from fakedata.utils import fake_cache
 from settings import settings
-import pathlib
-import orjson
 
 fake_films = [
     {'id': '2a090dde-f688-46fe-a9f4-b781a985275e',

@@ -2,7 +2,7 @@
 
 Используемая ручка: API v1 /api/v1/films/.
 """
-
+import http
 from asyncio.unix_events import _UnixSelectorEventLoop
 from typing import Callable
 
@@ -10,11 +10,9 @@ import pytest
 from aiohttp import ClientSession
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-from fakedata.films import fake_cache_films_list_blank, \
-    fake_cache_films_list_data, fake_es_films_index
-from fixtures import es_client, event_loop, make_get_request, redis_client, \
-    session
+from fakedata.films import fake_cache_films_list_blank, fake_cache_films_list_data, fake_es_films_index
 from films.fixtures import BASE_URL, setup
+from fixtures import es_client, event_loop, make_get_request, redis_client, session
 
 
 @pytest.mark.asyncio
@@ -37,7 +35,7 @@ async def test_films_list_cache_not_exists_es_index_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 0
 
 
@@ -67,7 +65,7 @@ async def test_films_list_cache_exists_es_index_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 0
 
     # ======== Not blank cache ========
@@ -82,7 +80,7 @@ async def test_films_list_cache_exists_es_index_blank(
     )
 
     # # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert response.body == faked_films_in_cache
 
 
@@ -112,20 +110,19 @@ async def test_films_list_cache_blank_index_not_blank(
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(faked_films_in_es_index) > 0
     assert len(response.body) == 0
 
     # ======== Not Blank cache ========
     # ==== Fake ===
-    faked_films_in_cache = await fake_cache_films_list_data(
-        redis_client=redis_client, limit=3)
+    faked_films_in_cache = await fake_cache_films_list_data(redis_client=redis_client, limit=3)
 
     # ==== Run ====
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert response.body == faked_films_in_cache
     assert len(response.body) != len(faked_films_in_es_index)
 
@@ -149,27 +146,24 @@ async def test_films_list_cache_exists_not_blank_es_index_not_blank(
        (она сохранилась в кеш!)
     """
     # ==== Fake 1 ===
-    faked_films_in_es_index_1 = await fake_es_films_index(es_client=es_client,
-                                                          limit=5)
-    faked_films_in_es_index_1_sorted = sorted(faked_films_in_es_index_1,
-                                              key=lambda x: x.get(
-                                                  'imdb_rating'),
-                                              reverse=True)
+    faked_films_in_es_index_1 = await fake_es_films_index(es_client=es_client, limit=5)
+    faked_films_in_es_index_1_sorted = sorted(
+        faked_films_in_es_index_1, key=lambda x: x.get('imdb_rating'), reverse=True,
+    )
     # ==== Run 1 ====
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts 1 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert response.body == faked_films_in_es_index_1_sorted
 
     # ==== Fake 2 ===
-    faked_films_in_es_index_2 = await fake_es_films_index(es_client=es_client,
-                                                          limit=3)
+    faked_films_in_es_index_2 = await fake_es_films_index(es_client=es_client, limit=3)
     # ==== Run 2 ====
     response = await make_get_request(base_url=BASE_URL, method='/')
 
     # ==== Asserts 2 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) != len(faked_films_in_es_index_2)
     assert response.body == faked_films_in_es_index_1_sorted
 
@@ -190,8 +184,7 @@ async def test_films_list_pagination(
     Проверяем, что присутствие сторонних кешей не влияет на выдачу.
     """
     # ==== Fake 1 ===
-    faked_films_in_es_index_1 = await fake_es_films_index(es_client=es_client,
-                                                          limit=5)
+    faked_films_in_es_index_1 = await fake_es_films_index(es_client=es_client, limit=5)
     await fake_cache_films_list_data(redis_client=redis_client, limit=10)
 
     # ==== Run 1 ====
@@ -202,7 +195,7 @@ async def test_films_list_pagination(
     )
 
     # ==== Asserts 1 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 3
     for item in response.body:
         assert item in faked_films_in_es_index_1
@@ -215,7 +208,7 @@ async def test_films_list_pagination(
     )
 
     # ==== Asserts 2 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 2
     for item in response.body:
         assert item in faked_films_in_es_index_1
@@ -228,5 +221,5 @@ async def test_films_list_pagination(
     )
 
     # ==== Asserts 3 ====
-    assert response.status == 200
+    assert response.status == http.HTTPStatus.OK
     assert len(response.body) == 0
