@@ -2,12 +2,12 @@
 from dataclasses import dataclass
 from functools import lru_cache
 
-from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 
 from core.config import settings
-from db.cache.redis import RedisCache, get_redis
+from db.cache.base import AsyncCacheStorage
+from db.cache.redis import Cache, get_redis
 from db.data_providers.elastic import get_elastic
 from db.data_providers.films import FilmsDataProvider
 from models.film import Film
@@ -21,19 +21,19 @@ class FilmService(BaseService):
     """Serves the Film model."""
 
     db: FilmsDataProvider
-    cache: RedisCache
+    cache: Cache
 
 
 @lru_cache()
 def get_film_service(
-        redis: Redis = Depends(get_redis),
+        cache: AsyncCacheStorage = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> FilmService:
     """
     Сервис по загрузке кинопроизведений.
 
     Args:
-        redis:
+        cache:
         elastic:
 
     Returns:
@@ -44,8 +44,8 @@ def get_film_service(
             es_client=elastic,
             es_index=settings.MOVIES_ES_INDEX,
         ),
-        cache=RedisCache(
-            redis_client=redis,
+        cache=Cache(
+            cache_client=cache,
             model_class=Film,
             ttl=FILM_CACHE_EXPIRE_IN_SECONDS,
         ),

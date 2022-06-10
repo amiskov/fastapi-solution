@@ -7,7 +7,7 @@ from aioredis import Redis
 from pydantic import BaseModel
 from pydantic.json import pydantic_encoder
 
-from db.cache.base import BaseCache
+from db.cache.base import AsyncCacheStorage
 
 DEFAULT_TIME_TO_LIVE = 60 * 5
 
@@ -20,10 +20,10 @@ async def get_redis() -> Redis:
 
 
 @dataclass
-class RedisCache(BaseCache):
+class Cache:
     """Caches queries with Redis."""
 
-    redis_client: Redis
+    cache_client: AsyncCacheStorage
     model_class: Type[BaseModel]
     ttl: int = DEFAULT_TIME_TO_LIVE
 
@@ -34,13 +34,13 @@ class RedisCache(BaseCache):
     ) -> Union[Optional[BaseModel], list[BaseModel]]:
         """Retrieve the data from the data source for further caching."""
         key = self._get_caching_key(get_from_db, **kwargs)
-        cached_data = await self.redis_client.get(key)
+        cached_data = await self.cache_client.get(key)
         if cached_data:
             data = cached_data
         else:
             data_raw = await get_from_db(**kwargs)
             data = orjson.dumps(data_raw, default=pydantic_encoder)
-            await self.redis_client.set(key, data, expire=self.ttl)
+            await self.cache_client.set(key, data, expire=self.ttl)
 
         d = orjson.loads(data)
         if isinstance(d, dict):
